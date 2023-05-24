@@ -5,14 +5,9 @@
 1. One for the peaks, with the library structure [here](https://teichlab.github.io/scg_lib_structs/methods_html/10xChromium_scATAC.html)
 2. Another for the antibody capture and hashtag information which you can find the library strcuture of [here](https://github.com/romagnanilab/single_cell_analysis/blob/3c8e77babbde4d7305c3c9f8d893ef4104df45ed/static_files/asap_assay_scheme.pdf).
 
-ATAC-seq libaries generally require less sequencing saturation that RNA-seq libraries due to their decreased complexity, deriving from their higher signal-to-noise ratio and sparse coverage across the large genome. 10X recommend to sequence to [25,000 read pairs per nucleus](https://www.10xgenomics.com/support/single-cell-atac/documentation/steps/sequencing/sequencing-requirements-for-single-cell-atac), but we have generally gone higher at 50,000 or so.
+ATAC-seq libaries generally require less sequencing saturation that RNA-seq libraries due to their decreased complexity, deriving from their higher signal-to-noise ratio and sparse coverage across the large genome. 10X recommend to sequence to [25,000 read pairs per nucleus](https://www.10xgenomics.com/support/single-cell-atac/documentation/steps/sequencing/sequencing-requirements-for-single-cell-atac), but we have generally gone higher to 50,000 or so.
 
-| <p align="left">Source of loss</p> | <p align="left">% of remaining reads</p> |
-| ------------- | ------------- |
-| `FASTQC` sequencing quality | ~10 |
-| `cellranger` Poor quality which cannot be mapped in a cell | ~30 |
-| Hashtag doublets | 2-10  |
-| QC<sub>low</sub> cells | 10-20  |
+For the antibody capture, the quality of data is generally lower due to the alternative method of how we capture antibody reads; using the bridge oligo versus the read being captured inside the GEM like it is with scRNA-seq and multiome protocols. ** ADD MORE HERE **
 
 When you submit your libraries to get sequenced, take care in choosing the read lengths for Read 1, the i7 and i5 indices, and Read 2. You can find these [here](https://www.10xgenomics.com/support/single-cell-atac/documentation/steps/sequencing/sequencing-requirements-for-single-cell-atac), but the bottom line is to sequence *at least*:
 
