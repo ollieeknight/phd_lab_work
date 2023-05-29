@@ -1,4 +1,10 @@
+# Processing raw ASAP-seq from the command line
+
+
+
 Downloading raw data
+
+
 
 Running bcl2fastq2
 
