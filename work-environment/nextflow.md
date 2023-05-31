@@ -96,7 +96,7 @@ nextflow run nf-core/sarek -r 3.1.2 --input samplesheet.csv --outdir project_id_
 ```
 
 ## Extracting tables from vcf files
-One you have your annotated variants from the `sarek` pipeline, we can extract information from `mutect2`- and `strelka`-runpaired samples:
+One you have your annotated variants from the `sarek` pipeline, we can extract information from `mutect2`- and `strelka`-run paired samples. You will need to activate your vcf conda environment, which we created [here](https://github.com/ollieeknight/single_cell_analysis/blob/main/work-environment/conda_environments.md#manipulating-vcf-files) 
 
 ### Strelka
 ```
