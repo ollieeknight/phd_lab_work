@@ -50,6 +50,11 @@ mamba create -y -n mitochondrial_genotyping openjdk r-data.table r-matrix biocon
 conda activate mitochondrial_genotyping
 pip install mgatk
 ```
+## Manipulating vcf files
+
+```
+mamba create -y -n vcf_process bcftools 
+```
 
 ## Using python packages in `R` through `reticulate`
 
