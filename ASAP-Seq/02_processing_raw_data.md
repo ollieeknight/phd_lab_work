@@ -13,34 +13,42 @@ Once you have downloaded your data, I recommend setting up your project director
 
 Following this, you now need to create two files in your `project_id_scripts` folder
 ### FASTQ shell script
-To submit commands to the job-scheduling program `slurm', you need to create a shell file, which you can do with `nano project_id_scripts/fastq.sh`. Here is a template for generating FASTQ from BCL files for ATAC-seq:
-
 ```
+nano project_id_scripts/fastq.sh
+```
+To submit commands to the job-scheduling program `slurm`, you need to create a shell file, which you can do with . Here is a template for generating FASTQ from BCL files for ATAC-seq:
+
+```shell
 #!/bin/bash
 
-#SBATCH -o /fast/home/users/knighto_c/work/slurm/%j.err
-#SBATCH -e/fast/home/users/knighto_c/work/slurm/%j.out
 #SBATCH --ntasks 32
 #SBATCH --mem 64000
 #SBATCH --time 6:00:00
 
-#SBATCH -J fqatac
+#SBATCH -J fq_atac
 #SBATCH -D /fast/home/users/knighto_c/scratch/ngs
 
-export PATH=/fast/home/users/knighto_c/group/work/bin/cellranger-atac-2.1.0/bin:$PATH
-source /fast/home/users/knighto_c/work/bin/miniconda3/etc/profile.d/conda.sh
-conda activate sctools
+username=knighto_c
+project_id=S1234
+bases_mask='Y100n*,I8n*,Y16n*,Y100n*'
 
-project_id=S3816
-project_dir=/fast/home/users/knighto_c/scratch/ngs/${project_id}/
+ln -s /fast/home/groups/ag_romagnani ~/group
+export PATH=/fast/home/users/$username/group/work/bin/cellranger-atac-2.1.0/bin:$PATH
+source /fast/home/users/$username/work/bin/miniconda3/etc/profile.d/conda.sh
+project_dir=/fast/home/users/$username/scratch/ngs/${project_id}/
 
-cd $project_dir
+conda activate bcl_to_fastq
 
-cellranger-atac mkfastq --id ${project_id}_fastq --run ${project_id}_bcl --csv ${project_dir}/${project_id}_scripts/indices.csv --use-bases-mask Y88n*,I8n*,Y16n*,Y88n*
+exec > /fast/home/users/$username/scratch/ngs/${project_id}/fastq_creation.log
+{
+  conda list
+  cd $project_dir
+  cellranger-atac mkfastq --id ${project_id}_fastq --run ${project_id}_bcl --csv ${project_dir}/${project_id}_scripts/indices.csv --use-bases-mask $bases_mask
+  rm -r ${project_id}_fastq/_* ${project_id}_fastq/MAKE_FASTQS_CS
+} 2>&1
 
-rm -r ${project_id}_fastq/_* ${project_id}_fastq/MAKE_FASTQS_CS
+mv /fast/home/users/$username/scratch/ngs/${project_id}/fastq_creation.log /fast/home/users/$username/scratch/ngs/${project_id}/${project_id}_fastq
 ```
-
 
 ## Running cellranger-atac count
 
