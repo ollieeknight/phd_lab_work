@@ -6,7 +6,7 @@ Once you receive the notification that your samples have been sequenced, the fir
 
 Depending on where your data was sequenced, the process will be different for downloading. Please ask for login credentials as they will not be written here and will be given out personally.
 
-## Running bcl2fastq2
+## Converting `BCL` files to `FASTQ`
 Once you have downloaded your data, I recommend setting up your project directory as follows:  
 1. Rename your downloaded folder, with the RunInfo.xml file present using `mv original_name project_id_bcl`  
 2. Create a folder for processing scripts with `mkdir -p project_id_scripts`. (the -p 'flag' is to create it only if it isn't already present)  
@@ -21,7 +21,7 @@ The next four lines correspond to four primers, two of which belong to the antib
 ```
 nano project_id_scripts/indices.csv
 ```
-```
+```shell
 lane,sample,index
 *,NK_CMVpos_exp3_libA_atac,SI-NA-A11
 *,NK_CMVpos_exp3_libB_atac,SI-NA-A12
@@ -33,13 +33,15 @@ lane,sample,index
 
 ### FASTQ shell script
 
-To submit commands to the job-scheduling program `slurm`, you need to create a shell file, which you can do with . Here is a template for generating FASTQ from BCL files for ATAC-seq:
+To submit commands to the job-scheduling program `slurm`, you need to create a shell file. Here is a template for generating FASTQ from BCL files for ATAC-seq:
 ```
 nano project_id_scripts/fastq.sh
 ```
 ```shell
 #!/bin/bash
 
+#SBATCH -o /fast/home/users/knighto_c/work/slurm/%j.err
+#SBATCH -e /fast/home/users/knighto_c/work/slurm/%j.out
 #SBATCH --ntasks 32
 #SBATCH --mem 64000
 #SBATCH --time 6:00:00
@@ -75,11 +77,52 @@ Let's break down what's going on here.
 4. The `conda` environment generated [here](https://github.com/ollieeknight/single_cell_analysis/blob/main/work-environment/conda_environments.md#processing-raw-bcl-files) is activated.
 5. `exec` then opens a connection to write a log at a destination, where the versions of programs used are listed. `cellranger-atac mkfastq` then uses the variables you set to generate fastq files, before removing intermediate files and moving that log into the fastq folder.
 
-## Running cellranger-atac count
+Once you have saved these files, you can submit the command with `sbatch project_id_scripts/fastq.sh`
 
+## Generating count matrices with `cellranger-atac count`
 
+```shell
+#!/bin/bash
 
-## Running AMULET and cellsnp-lite/vireoSNP
+#SBATCH -o /fast/home/users/knighto_c/work/slurm/%j.err
+#SBATCH -e /fast/home/users/knighto_c/work/slurm/%j.out
+#SBATCH --ntasks 64
+#SBATCH --mem 128000
+#SBATCH --time 24:00:00
 
-## Running ASAP-to-KITE
+#SBATCH -J atac
+#SBATCH -D /fast/home/users/knighto_c/scratch/ngs
+
+username=knighto_c
+project_id=S1234
+ref=/fast/home/users/$username/group/ref/hs/refdata-arc-hardmasked-GRCh38-2.0.1
+
+export PATH=/fast/home/users/$username/group/work/bin/cellranger-atac-2.1.0/bin:$PATH
+project_dir=/fast/home/users/$username/scratch/ngs/$project_id
+flowcell_id=$(grep -m 1 'Flowcell=' $project_dir/${project_id}_bcl/RTA3.cfg | sed 's/.*Flowcell=//')
+project_fastqs=$project_dir/${project_id}_fastq/outs/fastq_path/$flowcell_id
+
+mkdir -p $project_dir/${project_id}_outs && cd $project_dir/${project_id}_outs
+
+sample_ids=(NK_CMVpos_exp3_libA NK_CMVpos_exp3_libB)
+
+for i in "${!sample_ids[@]}"
+do
+  sample=${sample_ids[$i]}
+	
+  cellranger-atac count --id $sample --reference $ref --fastqs $project_fastqs --sample ${sample}_atac
+	
+  mkdir -p $sample/logs
+	mv $sample/*.tgz $sample/logs
+	rm -r $sample/SC_ATAC_COUNTER_CS/ $sample/_*
+
+done
+```
+
+## Detecting doublets and genotypign cells with `AMULET` and `cellsnp-lite`/`vireoSNP`
+
+## Genotyping mitochondrial DNA with `mgatk`
+
+## Counting antibody capture with `ASAP-to-KITE`
+
 
