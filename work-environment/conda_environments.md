@@ -32,7 +32,7 @@ conda install mamba
 ```
 
 ## Processing raw BCL files
-`mamba create -y -n fastq_creation -c bih-cubi bcl2fastq2`  
+`mamba create -y -n bcl_to_fastq -c bih-cubi bcl2fastq2`  
 
 ## Genotyping genomic BAM files
 ```
