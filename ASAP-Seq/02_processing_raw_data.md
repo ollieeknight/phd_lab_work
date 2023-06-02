@@ -119,10 +119,126 @@ do
 done
 ```
 
-## Detecting doublets and genotypign cells with `AMULET` and `cellsnp-lite`/`vireoSNP`
+## Post-processing
+For the next few steps, we actually run everything in one submitted script. I have separated these by each function, however be sure to paste all of it together if you would like to also perform everything in one step. Critical things to remember here including ensure [all conda environments are created](https://github.com/ollieeknight/single_cell_analysis/blob/main/work-environment/conda_environments.md), and that the naming is conserved between it.  
+```shell
+#!/bin/bash
+#SBATCH -o /fast/home/users/knighto_c/work/slurm/%j.err
+#SBATCH -e /fast/home/users/knighto_c/work/slurm/%j.out
+#SBATCH --ntasks 32
+#SBATCH --mem 128000
+#SBATCH --time 24:00:00
 
-## Genotyping mitochondrial DNA with `mgatk`
+#SBATCH -J geno
+#SBATCH -D /fast/home/users/knighto_c/scratch/ngs
 
-## Counting antibody capture with `ASAP-to-KITE`
+username=knighto_c
+project_id=S1234
 
+
+source /fast/home/users/$username/work/bin/miniconda3/etc/profile.d/conda.sh
+genotyping_vcf=/fast/home/users/$username/group/work/ref/vireo/genome1K.phase3.SNP_AF5e2.chr1toX.hg38.vcf.gz
+amulet_dir=/fast/home/users/$username/group/work/bin/amulet
+
+sample_ids=(NK_CMVpos_exp3_libA NK_CMVpos_exp3_libB)
+n_donors=(2 2)
+threads=32
+
+project_dir=/fast/home/users/$username/scratch/ngs/${project_id}
+
+cd ${project_dir}/${project_id}_outs
+```
+### Detecting doublets and genotyping cells with `AMULET` and `cellsnp-lite`/`vireoSNP`
+```shell
+conda activate bam_genotyping
+
+for i in "${!sample_ids[@]}"
+do
+        sample=${sample_ids[$i]}
+        donors=${n_donors[$i]}
+
+exec > $sample/logs/genotype.log
+{
+        conda list
+        printf "$sample has started genotyping with $donors" >> /fast/home/users/knighto_c/work/slurm/${SLURM_JOB_ID}.out
+        cellsnp-lite -s $sample/outs/possorted_bam.bam -b $sample/outs/filtered_peak_bc_matrix/barcodes.tsv -O $sample/genotype -R $genotyping_vcf -p 20 --minMAF 0.1 --minCOUNT 20 --gzip -p $threads --UMItag None
+        vireo -c $sample/genotype -o $sample/genotype -N $donors -p $threads
+} 2>&1
+done
+
+conda activate amulet_doublets
+
+for i in "${!sample_ids[@]}"
+do
+        sample=${sample_ids[$i]}
+
+exec > $sample/logs/amulet_doublets.log
+{
+        conda list
+        printf "$sample has started genotyping with $donors"
+        mkdir -p $sample/amulet
+        $amulet_dir/AMULET.sh $sample/outs/fragments.tsv.gz $sample/outs/singlecell.csv $amulet_dir/human_autosomes.txt $amulet_dir/RestrictionRepeatLists/restrictionlist_repeats_segdups_rmsk_hg38.bed $sample/amulet/ $amulet_dir
+} 2>&1
+done
+```
+
+### Genotyping mitochondrial DNA with `mgatk`
+```shell
+conda activate mitochondrial_genotyping
+
+for i in "${!sample_ids[@]}"
+do
+        sample=${sample_ids[$i]}
+
+exec > $sample/logs/mitochondrial_genotyping.log
+{
+        conda list
+        printf "performing mitochondrial genotyping of $sample"
+        mgatk tenx -i $sample/outs/possorted_bam.bam -n sample -o $sample/mgatk/ -c 12 -bt CB -b ${sample}/outs/filtered_peak_bc_matrix/barcodes.tsv
+} 2>&1
+done
+```
+
+### Counting antibody capture with `ASAP-to-KITE`
+```shell
+
+username=knighto_c
+project_id=S1234
+
+asap_to_kite=/fast/home/users/$username/group/work/bin/asap/asap_to_kite_v2.py
+featuremap=/fast/home/users/$username/group/work/bin/asap/featuremap.py
+atac_whitelist=/fast/home/users/$username/group/work/bin/whitelists/737K-cratac-v1.txt
+project_dir=/fast/home/users/$username/scratch/ngs/$project_id
+flowcell_id=$(grep -m 1 'Flowcell=' $project_dir/${project_id}_bcl/RTA3.cfg | sed 's/.*Flowcell=//')
+project_fastqs=$project_dir/${project_id}_fastq/outs/fastq_path/$flowcell_id
+
+sample_ids=(NK_CMVpos_exp3_libA NK_CMVpos_exp3_libB)
+threads=32
+
+cd $project_dir/${project_id}_outs
+
+conda activate adt_count
+
+mkdir -p adt_index
+python $kite $project_dir/${project_id}_scripts/adt.csv --t2g adt_index/FeaturesMismatch.t2g --fa adt_index/FeaturesMismatch.fa --header --quiet
+kallisto index -i adt_index/FeaturesMismatch.idx -k 15 adt_index/FeaturesMismatch.fa -o temp/
+
+for i in "${!sample_ids[@]}"
+do
+        sample=${sample_ids[$i]}
+
+exec > $sample/logs/adt_counting.log
+{
+	mkdir -p temp
+	mkdir -p $project_fastqs/asap_fastqs
+	python $asap_to_kite -f $project_fastqs -s sample* -o $project_fastqs/asap_fastqs/
+	
+	kallisto bus -i adt_index/FeaturesMismatch.idx -o temp/ -x 0,0,16:0,16,26:1,0,0 -t $threads $project_fastqs/asap_fastqs/${sample}*
+	bustools correct -w $atac_whitelist temp/output.bus -o temp/output_corrected.bus
+	bustools sort -t $threads -o temp/output_sorted.bus temp/output_corrected.bus
+	bustools count -o $sample/adt/ --genecounts -g adt_index/FeaturesMismatch.t2g -e temp/matrix.ec -t adt_index/transcripts.txt temp/output_sorted.bus
+	rm -r temp
+} 2>&1
+done
+```
 
