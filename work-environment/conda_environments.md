@@ -36,8 +36,8 @@ conda install mamba
 
 ## Genotyping genomic BAM files
 ```
-mamba create -y -n bam_genotyping python cellsnp-lite  
-conda activate bam_genotyping
+mamba create -y -n donor_genotyping python cellsnp-lite  
+conda activate donor_genotyping
 pip install vireoSNP
 ```
 
