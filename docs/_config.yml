@@ -1,5 +1,5 @@
 title: "Romagnani lab single cell analysis guides"
-baseurl: /workshop-scRNAseq
+baseurl: /single_cell_analysis
 
 # where things are
 layouts_dir: /docs/layouts
