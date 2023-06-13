@@ -17,13 +17,11 @@ defaults:
 menu:
   - title: Overview
     url:
-  - title: Schedule
-    url: schedule
-  - title: Exercises
-    url: exercises
-  - title: Pre-course
-    url: precourse
-  - title: FAQ
-    url: labs/FAQ
-  - title: Travel info
-    url: travel
+  - title: scRNA-seq, 5' and 3'
+    url: scRNA
+  - title: ATAC-seq
+    url: scATAC
+  - title: Multiome/dogma
+    url: multiome
+  - title: Spatial
+    url: spatial
