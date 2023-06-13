@@ -1,11 +1,11 @@
-title: "Single_cell RNA sequencing analysis course"
+title: "Romagnani lab single cell analysis guides"
 baseurl: /workshop-scRNAseq
 
 # where things are
-layouts_dir: ./workshop-common/layouts
-includes_dir: ./workshop-common/includes
+layouts_dir: /docs/layouts
+includes_dir: /docs/includes
 sass:
-  sass_dir: ./workshop-common/sass
+  sass_dir: /docs/sass
 
 plugins:
   - jemoji
@@ -15,7 +15,7 @@ defaults:
       logosnav: true
 
 menu:
-  - title: Overview
+  - title: Introduction
     url:
   - title: scRNA-seq, 5' and 3'
     url: scRNA
