@@ -2,10 +2,10 @@ title: "Romagnani lab single cell analysis guides"
 baseurl: /single_cell_analysis
 
 # where things are
-layouts_dir: /docs/layouts
-includes_dir: /docs/includes
+layouts_dir: /layouts
+includes_dir: /includes
 sass:
-  sass_dir: /docs/sass
+  sass_dir: /sass
 
 plugins:
   - jemoji
