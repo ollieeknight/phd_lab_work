@@ -5,32 +5,32 @@
     <div class="panel-body">
         <div class="row">
             <div class="col s3">
-                {% if page.teaching %}
-                    <strong>Teaching:</strong> {{ page.teaching }} min
+                {% if page.details1 %}
+                    <strong>Contents:</strong> {{ page.details1 }}
                     <br/>
                 {% endif %}
-                {% if page.exercises %}
-                    <strong>Exercises:</strong> {{ page.exercises }} min
+                {% if page.details2 %}
+                    <strong>Useful links:</strong> {{ page.details2 }}
                     <br/>
                 {% endif %}
-                {% if page.break %}
-                    <strong>Break:</strong> {{ page.break }} min
+                {% if page.details3 %}
+                    <strong>Inspiration:</strong> {{ page.details3 }}
                 {% endif %}
             </div>
             <div class="col s9">
-                {% if page.questions %}
-                    <strong>Questions</strong>
+                {% if page.list1 %}
+                    <strong>List 1</strong>
                     <ul>
-                        {% for question in page.questions %}
-                            <li>{{ question }}</li>
+                        {% for item in page.list1 %}
+                            <li>{{ item }}</li>
                         {% endfor %}
                     </ul>
                 {% endif %}
-                {% if page.objectives %}
-                    <strong>Objectives</strong>
+                {% if page.list2 %}
+                    <strong>List 2</strong>
                     <ul>
-                        {% for objective in page.objectives %}
-                            <li>{{ objective }}</li>
+                        {% for item in page.list2 %}
+                            <li>{{ item }}</li>
                         {% endfor %}
                     </ul>
                 {% endif %}
