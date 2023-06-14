@@ -59,6 +59,13 @@ pip install mgatk
 mamba create -y -n adt_count python kallisto bustools 
 ```
 
+## Cellbender
+```shell
+mamba create -y -n cellbender -c nvidia python=3.7 cuda-toolkit cuda-nvcc
+conda activate cellbender
+pip install git+https://github.com/ollieeknight/CellBender@sf_dev_0.3.0_postreg
+```
+
 ## Manipulating vcf files
 
 ```shell
