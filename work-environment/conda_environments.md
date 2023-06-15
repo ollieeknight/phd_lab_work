@@ -57,6 +57,8 @@ pip install mgatk
 ## Collating antibody capture counts per cell
 ```shell
 mamba create -y -n adt_count python kallisto bustools 
+conda activate adt_count
+pip install bio
 ```
 
 ## Cellbender
