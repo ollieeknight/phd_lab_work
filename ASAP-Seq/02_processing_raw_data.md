@@ -48,26 +48,29 @@ nano project_id_scripts/fastq.sh
 #SBATCH -J fq_atac
 #SBATCH -D /fast/home/users/knighto_c/scratch/ngs
 
-username=knighto_c
 project_id=S1234
 bases_mask='Y100n*,I8n*,Y16n*,Y100n*'
 
-ln -s /fast/home/groups/ag_romagnani ~/group
-export PATH=/fast/home/users/$username/group/work/bin/cellranger-atac-2.1.0/bin:$PATH
-source /fast/home/users/$username/work/bin/miniconda3/etc/profile.d/conda.sh
-project_dir=/fast/home/users/$username/scratch/ngs/${project_id}/
+if [ ! -d "~/group" ]; then
+    ln -s /fast/home/groups/ag_romagnani ~/group
+fi
+
+export PATH=~/group/work/bin/cellranger-atac-2.1.0/bin:$PATH
+source ~/work/bin/miniconda3/etc/profile.d/conda.sh
+project_dir=~/scratch/ngs/${project_id}/
 
 conda activate bcl_to_fastq
 
-exec > /fast/home/users/$username/scratch/ngs/${project_id}/fastq_creation.log
+cd $project_dir
+
+exec > ~/scratch/ngs/${project_id}/fastq_creation.log
 {
   conda list
-  cd $project_dir
-  cellranger-atac mkfastq --id ${project_id}_fastq --run ${project_id}_bcl --csv ${project_dir}/${project_id}_scripts/indices.csv --use-bases-mask $bases_mask
+  cellranger-atac mkfastq --id ${project_id}_fastq --run ${project_id}_bcl --csv ${project_id}_scripts/indices.csv --use-bases-mask $bases_mask
   rm -r ${project_id}_fastq/_* ${project_id}_fastq/MAKE_FASTQS_CS
 } 2>&1
 
-mv /fast/home/users/$username/scratch/ngs/${project_id}/fastq_creation.log /fast/home/users/$username/scratch/ngs/${project_id}/${project_id}_fastq
+mv ~/scratch/ngs/${project_id}/fastq_creation.log ~/scratch/ngs/${project_id}/${project_id}_fastq
 ```
 
 Let's break down what's going on here.
