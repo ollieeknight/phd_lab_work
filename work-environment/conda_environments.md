@@ -78,7 +78,6 @@ mamba create -y -n vcf_process bcftools
 
 ```shell
 mamba create -y -n r_reticulate_python numpy leidenalg umap-learn macs2 scanpy scvi-tools
-conda activate sc_python
 ```
 
 Then, in R, start your script with
@@ -92,6 +91,6 @@ Replacing `$username` with your username.
 
 And for MACS2 peaks calling:
 ```R
-peaks <- Signac::CallPeaks(alldata, assay = 'ATAC', macs2.path = '/fast/work/users/$username/bin/miniconda3/envs/peaks/bin/macs2')
+peaks <- Signac::CallPeaks(alldata, assay = 'ATAC', macs2.path = '/fast/work/users/$username/bin/miniconda3/envs/r_reticulate_python/bin/macs2')
 ```
 Where `alldata` is your seurat object, and replacing `$username`, again.
