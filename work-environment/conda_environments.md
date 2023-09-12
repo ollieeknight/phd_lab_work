@@ -65,7 +65,7 @@ pip install bio
 ```shell
 mamba create -y -n cellbender -c nvidia python=3.7 cuda-toolkit cuda-nvcc
 conda activate cellbender
-pip install git+https://github.com/ollieeknight/CellBender@sf_dev_0.3.0_postreg
+pip install cellbender
 ```
 
 ## Manipulating vcf files
