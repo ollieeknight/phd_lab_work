@@ -23,12 +23,12 @@ nano project_id_scripts/indices.csv
 ```
 ```shell
 lane,sample,index
-*,NK_CMVpos_exp3_libA_atac,SI-NA-A11
-*,NK_CMVpos_exp3_libB_atac,SI-NA-A12
-*,NK_CMVpos_exp3_libA_adt,AATGAGCG
-*,NK_CMVpos_exp3_libB_adt,GGAATCTC
-*,NK_CMVpos_exp3_libA_adt,CGCTCATT
-*,NK_CMVpos_exp3_libB_adt,GAGATTCC
+*,ASAP_NKG2C_exp3_libA_atac,SI-NA-A11
+*,ASAP_NKG2C_exp3_libB_atac,SI-NA-A12
+*,ASAP_NKG2C_exp3_libA_adt,AATGAGCG
+*,ASAP_NKG2C_exp3_libB_adt,GGAATCTC
+*,ASAP_NKG2C_exp3_libA_adt,CGCTCATT
+*,ASAP_NKG2C_exp3_libB_adt,GAGATTCC
 ```
 
 ### FASTQ shell script
@@ -45,32 +45,29 @@ nano project_id_scripts/fastq.sh
 #SBATCH --ntasks 32
 #SBATCH --mem 64000
 #SBATCH --time 6:00:00
-#SBATCH -J fq_atac
+#SBATCH -J K0006
 #SBATCH -D /fast/home/users/knighto_c/scratch/ngs
 
-project_id=S1234
-bases_mask='Y100n*,I8n*,Y16n*,Y100n*'
-
-if [ ! -d "~/group" ]; then
-    ln -s /fast/home/groups/ag_romagnani ~/group
-fi
+project_id=S3816
+bases_mask='Y88n*,I8n*,Y16n*,Y88n*'
 
 export PATH=~/group/work/bin/cellranger-atac-2.1.0/bin:$PATH
 source ~/work/bin/miniconda3/etc/profile.d/conda.sh
 project_dir=~/scratch/ngs/${project_id}/
 
-conda activate bcl_to_fastq
-
 cd $project_dir
+
+conda activate bcl_to_fastq
 
 exec > ~/scratch/ngs/${project_id}/fastq_creation.log
 {
-  conda list
-  cellranger-atac mkfastq --id ${project_id}_fastq --run ${project_id}_bcl --csv ${project_id}_scripts/indices.csv --use-bases-mask $bases_mask
-  rm -r ${project_id}_fastq/_* ${project_id}_fastq/MAKE_FASTQS_CS
-} 2>&1
+        conda list
 
-mv ~/scratch/ngs/${project_id}/fastq_creation.log ~/scratch/ngs/${project_id}/${project_id}_fastq
+        cellranger-atac mkfastq --id ${project_id}_fastq --run ${project_id}_bcl --csv ${project_id}_scripts/indices.csv --use-bases-mask $bases_mask
+
+        rm -r ${project_id}_fastq/_* ${project_id}_fastq/MAKE_FASTQS_CS
+        mv $project_dir/fastq_creation.log $project_dir/${project_id}_fastq/fastq_creation.log
+} 2>&1
 ```
 
 Let's break down what's going on here.
@@ -91,33 +88,36 @@ Once you have saved these files, you can submit the command with `sbatch project
 #SBATCH -e /fast/home/users/knighto_c/work/slurm/%j.out
 #SBATCH --ntasks 64
 #SBATCH --mem 128000
-#SBATCH --time 24:00:00
-
-#SBATCH -J atac
+#SBATCH --time 72:00:00
+#SBATCH -J S3816
 #SBATCH -D /fast/home/users/knighto_c/scratch/ngs
 
-project_id=S1234
-ref=~/group/ref/hs/refdata-arc-hardmasked-GRCh38-2.0.1
+project_id=S3816
+ref=~/group/work/ref/hs/arc-hardmasked-optimised-GRCh38
 
 export PATH=~/group/work/bin/cellranger-atac-2.1.0/bin:$PATH
-project_dir=~/scratch/ngs/$project_id
-flowcell_id=$(grep -m 1 'Flowcell=' $project_dir/${project_id}_bcl/RTA3.cfg | sed 's/.*Flowcell=//')
-project_fastqs=$project_dir/${project_id}_fastq/outs/fastq_path/$flowcell_id
 
-mkdir -p $project_dir/${project_id}_outs && cd $project_dir/${project_id}_outs
+project_dir=~/scratch/ngs/${project_id}/
 
-sample_ids=(NK_CMVpos_exp3_libA NK_CMVpos_exp3_libB)
+flowcell_id=$(grep -m 1 'Flowcell=' ~/scratch/ngs/$project_id/${project_id}_bcl/RTA3.cfg | sed 's/.*Flowcell=//')
+project_fastqs=~/scratch/ngs/$project_id/${project_id}_fastq/outs/fastq_path/$flowcell_id
+echo $project_fastqs
+
+cd $project_dir
+
+mkdir -p ${project_id}_outs && cd ${project_id}_outs
+
+sample_ids=(ASAP_NKG2C_exp3_libA ASAP_NKG2C_exp3_libB)
 
 for i in "${!sample_ids[@]}"
 do
-  sample=${sample_ids[$i]}
-	
-  cellranger-atac count --id $sample --reference $ref --fastqs $project_fastqs --sample ${sample}_atac
-	
-  mkdir -p $sample/logs
-	mv $sample/*.tgz $sample/logs
-	rm -r $sample/SC_ATAC_COUNTER_CS/ $sample/_*
+        sample=${sample_ids[$i]}
 
+        cellranger-atac count --id $sample --reference $ref --fastqs $project_fastqs --sample ${sample}_atac
+
+        mkdir -p $sample/logs
+        mv $sample/*.tgz $sample/logs
+        rm -r $sample/SC_ATAC_COUNTER_CS/ $sample/_*
 done
 ```
 
