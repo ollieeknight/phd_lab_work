@@ -45,7 +45,7 @@ pip install vireoSNP
 
 ## Doublet detection from scATAC fragment overlap
 ```shell
-mamba create -y -n amulet_overlap numpy pandas scipy statsmodels
+mamba create -y -n amulet_overlap numpy=1.19 pandas scipy statsmodels
 ```
 
 ## Genotyping scATAC mitochondrial DNA
