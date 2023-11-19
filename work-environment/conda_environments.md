@@ -28,42 +28,41 @@ nano ~/.bashrc
 #paste this: source /fast/work/users/$USER/bin/miniconda3/etc/profile.d/conda.sh
 # CTRL + X, then Y, then enter to leave
 
-conda install mamba
 ```
 
 ## Processing raw BCL files
 ```shell
-mamba create -y -n bcl_to_fastq -c bih-cubi bcl2fastq2
+conda create -y -n bcl_to_fastq -c bih-cubi bcl2fastq2
 ```
 
 ## Genotyping genomic BAM files
 ```shell
-mamba create -y -n donor_genotyping python cellsnp-lite  
+conda create -y -n donor_genotyping python cellsnp-lite  
 conda activate donor_genotyping
 pip install vireoSNP
 ```
 
 ## Doublet detection from scATAC fragment overlap
 ```shell
-mamba create -y -n amulet_overlap numpy=1.19 pandas scipy statsmodels
+conda create -y -n amulet_overlap numpy=1.19 pandas scipy statsmodels
 ```
 
 ## Genotyping scATAC mitochondrial DNA
 ```shell
-mamba create -y -n mitochondrial_genotyping openjdk r-data.table r-matrix bioconductor-genomicranges bioconductor-summarizedexperiment
+conda create -y -n mitochondrial_genotyping openjdk r-data.table r-matrix bioconductor-genomicranges bioconductor-summarizedexperiment
 conda activate mitochondrial_genotyping
 pip install mgatk
 ```
 ## Collating antibody capture counts per cell
 ```shell
-mamba create -y -n adt_count python kallisto bustools 
+conda create -y -n adt_count python kallisto bustools 
 conda activate adt_count
 pip install bio
 ```
 
 ## Cellbender
 ```shell
-mamba create -y -n cellbender -c nvidia python=3.7 cuda-toolkit cuda-nvcc
+conda create -y -n cellbender -c nvidia python=3.7 cuda-toolkit cuda-nvcc
 conda activate cellbender
 pip install cellbender
 ```
@@ -71,13 +70,13 @@ pip install cellbender
 ## Manipulating vcf files
 
 ```shell
-mamba create -y -n vcf_process bcftools 
+conda create -y -n vcf_process bcftools 
 ```
 
 ## Using python packages in `R` through `reticulate`
 
 ```shell
-mamba create -y -n r_reticulate_python numpy leidenalg umap-learn macs2 scanpy scvi-tools
+conda create -y -n r_reticulate_python numpy leidenalg umap-learn macs2 scanpy scvi-tools
 ```
 
 Then, in R, start your script with
