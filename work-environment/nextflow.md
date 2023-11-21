@@ -7,40 +7,44 @@ For now I am only going to put my environment variables here. Talk to me if you 
 cd ~/work/bin
 wget https://download.oracle.com/java/17/archive/jdk-17.0.7_linux-x64_bin.tar.gz 
 tar -xf jdk-17.0.7_linux-x64_bin.tar.gz && rm jdk-17.0.7_linux-x64_bin.tar.gz
-export PATH=/data/gpfs-1/users/knighto_c/work/bin/jdk-17.0.7/bin:$PATH
+export PATH=~/work/bin/jdk-17.0.7/bin:$PATH
 mkdir -p nextflow
 cd nextflow
 wget -qO- https://get.nextflow.io | bash
-export PATH=/fast/home/users/knighto_c/work/bin/nextflow:$PATH
+export PATH=~/work/bin/nextflow:$PATH
 
-mkdir -p /fast/home/users/knighto_c/scratch/nf_work
-mkdir -p /fast/home/users/knighto_c/work/bin/nextflow/singularity_cache
+mkdir -p ~/scratch/nf_work
+mkdir -p ~/work/bin/nextflow/singularity_cache
 
-export NXF_HOME=/data/gpfs-1/users/knighto_c/work/bin/nextflow
-export NXF_SINGULARITY_CACHEDIR=/data/gpfs-1/users/knighto_c/work/bin/nextflow/singularity_cache
-export NXF_WORK=/fast/users/knighto_c/scratch/tmp/nf_work
-export NXF_JAVA_HOME=/data/gpfs-1/users/knighto_c/work/bin/jdk-17.0.7
+export NXF_HOME=~/work/bin/nextflow
+export NXF_SINGULARITY_CACHEDIR=~/work/bin/nextflow/singularity_cache
+export NXF_WORK=~/scratch/tmp/nf_work
+export NXF_JAVA_HOME=~/work/bin/jdk-17.0.7
 ```
 
 ## Processing Whole Exome Sequencing (WES) data with [Sarek](https://nf-co.re/sarek)
 
-### Configuration file
+### Configuration file - you can also find this under ~/group/ref/WES/
 
-```
+```bash
 executor {
   name = 'slurm'
   queueSize = 16
 }
+
 singularity {
   enabled = true
 }
+
 env {
     TMPDIR = '/fast/scratch/users/knighto_c/tmp/nf_work'
     SINGULARITY_CACHEDIR = '/fast/work/users/knighto_c/bin/nextflow/singularity_cache'
 }
+
 params {
-    max_memory = 64.GB
-    max_cpus = 32
+
+    max_memory = 16.GB
+    max_cpus = 8
     max_time = 48.h
     genomes {
        'GATK.GRCh38' {
@@ -72,7 +76,7 @@ params {
             mappability           = "${params.igenomes_base}/Homo_sapiens/GATK/GRCh38/Annotation/Control-FREEC/out100m2_hg38.gem"
             pon                   = "${params.igenomes_base}/Homo_sapiens/GATK/GRCh38/Annotation/GATKBundle/1000g_pon.hg38.vcf.gz"
             pon_tbi               = "${params.igenomes_base}/Homo_sapiens/GATK/GRCh38/Annotation/GATKBundle/1000g_pon.hg38.vcf.gz.tbi"
-            snpeff_db             = 'GRCh38.105'
+            snpeff_db             = 105
             snpeff_genome         = 'GRCh38'
             snpeff_version        = '5.1'
             vep_cache_version     = 106
@@ -87,16 +91,16 @@ params {
 ### Sample sheet
 ```
 patient,status,sample,lane,fastq_1,fastq_2
-LGL062,0,CT062,1,/data/gpfs-1/users/knighto_c/work/data/S8163/S8163_fastq/S000021_S8163Nr6.1.fastq.gz,/data/gpfs-1/users/knighto_c/work/data/S8163/S8163_fastq/S000021_S8163Nr6.2.fastq.gz
-LGL062,1,NK062,1,/data/gpfs-1/users/knighto_c/work/data/S8163/S8163_fastq/S000021_S8163Nr5.1.fastq.gz,/data/gpfs-1/users/knighto_c/work/data/S8163/S8163_fastq/S000021_S8163Nr5.2.fastq.gz
+PATIENT1,0,CT01,1,~/S8163_fastq/S000021_S8163Nr6.1.fastq.gz,~/S8163_fastq/S000021_S8163Nr6.2.fastq.gz
+PATIENT1,1,NK01,1,~/S8163_fastq/S000021_S8163Nr5.1.fastq.gz,~/S8163_fastq/S000021_S8163Nr5.2.fastq.gz
 ```
 ### Run command
 ```
-nextflow run nf-core/sarek -r 3.1.2 --input samplesheet.csv --outdir project_id_outs --genome GATK.GRCh38 -profile singularity -c cubi.config --igenomes_base /fast/home/groups/ag_romagnani/work/ref/igenomes --tools mutect2,vep
+nextflow run nf-core/sarek -r 3.2.3 --input samplesheet.csv --outdir outs --genome GATK.GRCh38 --igenomes_base ~/group/work/ref/igenomes -profile singularity -c ~/group/work/ref/WES/cubi.config --tools mutect2,strelka,vep --intervals ~/group/work/ref/WES/hg38_exome_v2.0.2_targets_sorted_validated.re_annotated.bed --wes --only-paired_variant_calling
 ```
 
 ## Extracting tables from vcf files
-One you have your annotated variants from the `sarek` pipeline, we can extract information from `mutect2`- and `strelka`-run paired samples. You will need to activate your vcf conda environment, which we created [here](https://github.com/ollieeknight/single_cell_analysis/blob/main/work-environment/conda_environments.md#manipulating-vcf-files) 
+One you have your annotated variants from the `sarek` pipeline, we can extract information from `mutect2`- and `strelka`-run paired samples. You will need to activate your `genome_processing` conda environment, which we created [here](https://github.com/ollieeknight/single_cell_analysis/blob/main/work-environment/conda_environments.md#manipulating-genomic-files) 
 
 ### Strelka
 ```
