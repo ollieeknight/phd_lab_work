@@ -49,10 +49,11 @@ conda create -y -n amulet_overlap numpy=1.19 pandas scipy statsmodels
 
 ## Genotyping scATAC mitochondrial DNA
 ```shell
-conda create -y -n mitochondrial_genotyping openjdk r-data.table r-matrix bioconductor-genomicranges bioconductor-summarizedexperiment
+conda create -y -n mitochondrial_genotyping openjdk r-base=4.2.3 r-data.table r-matrix bioconductor-genomicranges bioconductor-summarizedexperiment
 conda activate mitochondrial_genotyping
 pip install mgatk
 ```
+
 ## Collating antibody capture counts per cell
 ```shell
 conda create -y -n adt_count python kallisto bustools 
@@ -67,10 +68,10 @@ conda activate cellbender
 pip install cellbender
 ```
 
-## Manipulating vcf files
+## Manipulating genomic files
 
 ```shell
-conda create -y -n vcf_process bcftools 
+conda create -y -n henome_processing bcftools samtools bedtools bwa
 ```
 
 ## Using python packages in `R` through `reticulate`
