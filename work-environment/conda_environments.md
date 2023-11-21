@@ -77,19 +77,19 @@ conda create -y -n genome_processing bcftools samtools bedtools bwa
 ## Using python packages in `R` through `reticulate`
 
 ```shell
-conda create -y -n R_sc_python numpy leidenalg umap-learn macs2 scanpy scvi-tools
+conda create -y -n sc_R_python numpy leidenalg umap-learn macs2 scanpy scvi-tools
 ```
 
 Then, in R, start your script with
 ```R
 Sys.setenv(RETICULATE_MINICONDA_PATH = '~/bin/miniconda3/')
-Sys.setenv(PATH = paste('~/bin/miniconda3/envs/R_sc_python/lib/python3.11/site-packages/', Sys.getenv()['PATH'], sep = ':'))
+Sys.setenv(PATH = paste('~/bin/miniconda3/envs/sc_R_python/lib/python3.11/site-packages/', Sys.getenv()['PATH'], sep = ':'))
 library(reticulate)
-use_miniconda('~/bin/miniconda3/envs/R_sc_python')
+use_miniconda('~/bin/miniconda3/envs/sc_R_python')
 ```
 
 And for MACS2 peaks calling:
 ```R
-peaks <- Signac::CallPeaks(alldata, assay = 'ATAC', macs2.path = '~/bin/miniconda3/envs/R_sc_python/bin/macs2')
+peaks <- Signac::CallPeaks(alldata, assay = 'ATAC', macs2.path = '~/bin/miniconda3/envs/sc_R_python/bin/macs2')
 ```
 Where `alldata` is your seurat object.
