@@ -10,7 +10,7 @@ mkdir -p "$build"
 
 source=${genome}-source
 mkdir -p $source
-fasta_url="http://ftp.ensembl.org/pub/release-98/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna.primary_assembly.fa.gz"
+fasta_url="https://ftp.ensembl.org/pub/release-110/fasta/homo_sapiens/dna/Homo_sapiens.GRCh38.dna_sm.primary_assembly.fa.gz"
 fasta_in="$source/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
 gtf_url="https://storage.googleapis.com/generecovery/human_GRCh38_optimized_annotation_v2.gtf.gz"
 gtf_in="${source}/human_GRCh38_optimized_annotation_v2.gtf"
@@ -45,17 +45,15 @@ awk '{
     }
 }' "$motifs_in" > "$motifs_mod"
 
-wget https://raw.githubusercontent.com/caleblareau/mitoblacklist/master/combinedBlacklist/hg38.full.blacklist.bed -p $build
-cd $build
-mv Homo_sapiens.GRCh38.dna.primary_assembly.fa.mod Homo_sapiens.GRCh38.dna.primary_assembly_original.fa.mod
-bedtools maskfasta -fi Homo_sapiens.GRCh38.dna.primary_assembly_original.fa.modified -bed hg38.full.blacklist.bed  -fo Homo_sapiens.GRCh38.dna.primary_assembly_hardmasked.fa.modified
-cd ..
+wget https://raw.githubusercontent.com/caleblareau/mitoblacklist/master/combinedBlacklist/hg38.full.blacklist.bed -p $source
+mv $build/Homo_sapiens.GRCh38.dna.primary_assembly.fa.mod $build/Homo_sapiens.GRCh38.dna.primary_assembly_original.fa.mod
+bedtools maskfasta -fi $build/Homo_sapiens.GRCh38.dna.primary_assembly_original.fa.mod -bed $source/hg38.full.blacklist.bed -fo $build/Homo_sapiens.GRCh38.dna.primary_assembly_hardmasked.fa.mod
 
-config_in="${build}/GRCh38_mask.config"
+config_in="$build/mask.config"
 echo """{
     organism: \"Homo_sapiens\"
     genome: [\""$genome"\"]
-    input_fasta: [\""$build/Homo_sapiens.GRCh38.dna.primary_assembly_hardmasked.fa.modified"\"]
+    input_fasta: [\""$build/Homo_sapiens.GRCh38.dna.primary_assembly_hardmasked.fa.mod"\"]
     input_gtf: [\""$gtf_in"\"]
     input_motifs: \""$motifs_mod"\"
     non_nuclear_contigs: [\"chrM\"]
