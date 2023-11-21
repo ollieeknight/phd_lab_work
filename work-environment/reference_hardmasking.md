@@ -1,4 +1,4 @@
-**s**```bash
+```bash
 conda create -y -n genome_processing bcftools samtools bedtools bwa
 conda activate genome_processing
 
