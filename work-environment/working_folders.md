@@ -1,11 +1,11 @@
 # Setting up your working directory
 How you choose to organise your files is entirely your choice, but I've provided here a starting guide which I use for mine.
-```
+```bash
 $ tree ~/
 ├── group -> /fast/home/groups/ag_romagnani/
     ├── scratch -> /fast/scratch/groups/ag_romagnani
     └── work -> /fast/work/groups/ag_romagnani
-├── ondemand -> work/bin/ondemand
+├── ondemand -> ~/work/bin/ondemand
 ├── scratch -> /fast/scratch/users/knighto_c
     ├── BIH_TRASH
     ├── ngs
@@ -34,7 +34,7 @@ You can create this folder as per the tutorial [here](https://github.com/ollieek
 
 ### tmp
 This is an important folder which programs will use for temporary write storage, which you should add to your login `.bashrc` file with:
-```
+```bash
 export TMPDIR=/fast/users/$USER/scratch/tmp
 mkdir -p $TMPDIR/nf_work
 ```
@@ -47,7 +47,7 @@ You can create this folder yourself with `mkdir -p ~/scratch/ngs`, as an isolate
 Within my bin folder I have [`miniconda3`](https://github.com/ollieeknight/single_cell_analysis/blob/main/work-environment/conda_environments.md), `nextflow`, and `ondemand` installed. These are folders which are for my personal programs. Shared static programs like `cellranger` are found in `/fast/home/groups/ag_romagnani/bin/`.
 
 ### data
-Within my data folder I have my project files, for example `NK_CMVpos` with `data`, `objects`, and `scripts` folders. The data folder has **no** `bam` files in it as these take up a lot of space.
+Within my data folder I have my project files, for example `NKG2C` with `data`, `objects`, and `scripts` folders. The data folder has **no** `bam` files in it as these take up a lot of space.
 
 ### slurm
 This is a folder where I set `slurm` log and error messages to output.
