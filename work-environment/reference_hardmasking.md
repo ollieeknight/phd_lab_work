@@ -1,4 +1,4 @@
-```bash
+**s**```bash
 conda create -y -n genome_processing bcftools samtools bedtools bwa
 conda activate genome_processing
 
@@ -45,11 +45,11 @@ awk '{
     }
 }' "$motifs_in" > "$motifs_mod"
 
-wget https://raw.githubusercontent.com/caleblareau/mitoblacklist/master/combinedBlacklist/hg38.full.blacklist.bed -p $source
+wget https://raw.githubusercontent.com/caleblareau/mitoblacklist/master/combinedBlacklist/hg38.full.blacklist.bed -o $source/hg38.full.blacklist.bed
 mv $build/Homo_sapiens.GRCh38.dna.primary_assembly.fa.mod $build/Homo_sapiens.GRCh38.dna.primary_assembly_original.fa.mod
 bedtools maskfasta -fi $build/Homo_sapiens.GRCh38.dna.primary_assembly_original.fa.mod -bed $source/hg38.full.blacklist.bed -fo $build/Homo_sapiens.GRCh38.dna.primary_assembly_hardmasked.fa.mod
 
-config_in="$build/mask.config"
+config_in="$build/genome.config"
 echo """{
     organism: \"Homo_sapiens\"
     genome: [\""$genome"\"]
@@ -59,5 +59,7 @@ echo """{
     non_nuclear_contigs: [\"chrM\"]
 }""" > "$config_in"
 
-cellranger-arc mkref --ref-version="$version" --config="$config_in"
+cellranger-arc mkref --ref-version 'A' --config $config_in
+
+rm -r $source $build
 ```
