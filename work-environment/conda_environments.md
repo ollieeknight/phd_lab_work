@@ -71,26 +71,25 @@ pip install cellbender
 ## Manipulating genomic files
 
 ```shell
-conda create -y -n henome_processing bcftools samtools bedtools bwa
+conda create -y -n genome_processing bcftools samtools bedtools bwa
 ```
 
 ## Using python packages in `R` through `reticulate`
 
 ```shell
-conda create -y -n r_reticulate_python numpy leidenalg umap-learn macs2 scanpy scvi-tools
+conda create -y -n R_sc_python numpy leidenalg umap-learn macs2 scanpy scvi-tools
 ```
 
 Then, in R, start your script with
 ```R
-Sys.setenv(RETICULATE_MINICONDA_PATH = '/fast/work/users/$username/bin/miniconda3/')
-Sys.setenv(PATH = paste('/fast/work/users/$username/bin/miniconda3/envs/r_reticulate_python/lib/python3.11/site-packages/', Sys.getenv()['PATH'], sep = ':'))
+Sys.setenv(RETICULATE_MINICONDA_PATH = '~/bin/miniconda3/')
+Sys.setenv(PATH = paste('~/bin/miniconda3/envs/R_sc_python/lib/python3.11/site-packages/', Sys.getenv()['PATH'], sep = ':'))
 library(reticulate)
-use_miniconda('/fast/work/users/$username/bin/miniconda3/envs/r_reticulate_python')
+use_miniconda('~/bin/miniconda3/envs/R_sc_python')
 ```
-Replacing `$username` with your username.
 
 And for MACS2 peaks calling:
 ```R
-peaks <- Signac::CallPeaks(alldata, assay = 'ATAC', macs2.path = '/fast/work/users/$username/bin/miniconda3/envs/r_reticulate_python/bin/macs2')
+peaks <- Signac::CallPeaks(alldata, assay = 'ATAC', macs2.path = '~/bin/miniconda3/envs/R_sc_python/bin/macs2')
 ```
-Where `alldata` is your seurat object, and replacing `$username`, again.
+Where `alldata` is your seurat object.
