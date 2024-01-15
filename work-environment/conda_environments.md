@@ -49,7 +49,7 @@ conda create -y -n amulet_overlap numpy=1.19 pandas scipy statsmodels
 
 ## Genotyping scATAC mitochondrial DNA
 ```shell
-conda create -y -n mitochondrial_genotyping openjdk r-base=4.2.3 r-data.table r-matrix bioconductor-genomicranges bioconductor-summarizedexperiment
+conda create -y -n mitochondrial_genotyping openjdk r-base=4.2.3 r-data.table r-matrix bioconductor-genomicranges bioconductor-summarizedexperiment ruamel.yaml==0.17.35 snakemake==7.32.4 pyyaml==6.0.1 yaml=0.2.5  
 conda activate mitochondrial_genotyping
 pip install mgatk
 ```
