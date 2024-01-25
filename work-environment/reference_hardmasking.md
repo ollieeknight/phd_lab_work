@@ -4,7 +4,7 @@ conda activate genome_processing
 
 export PATH=~/group/work/bin/cellranger-arc-2.0.2:$PATH
 
-genome="GRCh38-hardmasked-optimised" # enter end folder name here
+genome="GRCh38-hardmasked-optimised-arc" # enter end folder name here
 build="${genome}-build"
 mkdir -p "$build"
 
