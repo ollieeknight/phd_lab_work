@@ -45,7 +45,7 @@ awk '{
     }
 }' "$motifs_in" > "$motifs_mod"
 
-wget https://raw.githubusercontent.com/caleblareau/mitoblacklist/master/combinedBlacklist/hg38.full.blacklist.bed -o $source/hg38.full.blacklist.bed
+curl -sS https://raw.githubusercontent.com/caleblareau/mitoblacklist/master/combinedBlacklist/hg38.full.blacklist.bed > $build/hg38.full.blacklist.bed
 mv $build/Homo_sapiens.GRCh38.dna.primary_assembly.fa.mod $build/Homo_sapiens.GRCh38.dna.primary_assembly_original.fa.mod
 bedtools maskfasta -fi $build/Homo_sapiens.GRCh38.dna.primary_assembly_original.fa.mod -bed $source/hg38.full.blacklist.bed -fo $build/Homo_sapiens.GRCh38.dna.primary_assembly_hardmasked.fa.mod
 
