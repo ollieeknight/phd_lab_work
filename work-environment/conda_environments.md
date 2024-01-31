@@ -1,32 +1,28 @@
 # Setting up conda environments for processing genomics files
 Once you've logged into the BIH-CUBI cluster through the command line, setting up your conda environments is crucial for processing genetic data.
 ```shell
-cd /fast/work/users/${USER}/ && mkdir bin/ && cd bin/
+mkdir ~/work/bin/ && cd ~/work/bin/
 
 # download, install, and update miniconda 
-wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-bash Miniconda3-latest-Linux-x86_64.sh -b -p miniconda3 && rm Miniconda3-latest-Linux-x86_64.sh
+curl -L https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o Miniconda3-latest-Linux-x86_64.sh
+bash Miniconda3-latest-Linux-x86_64.sh -b -p ~/work/bin/miniconda3 && rm Miniconda3-latest-Linux-x86_64.sh
 source miniconda3/etc/profile.d/conda.sh && conda activate
 
-# modify where conda looks for packages
+# modify conda repositories  
 nano ~/.condarc
 
-# copy and paste this into nano text editor
+# copy and paste this into nano (CTRL+C here, right click to paste)
 channels:
   - conda-forge
   - bioconda
   - defaults
 show_channel_urls: true
 changeps1: true
-channel_priority: strict
-# CTRL + X, then Y, then enter to leave
+channel_priority: flexible
+# close by CTRL+X and y and enter
 
-conda upgrade --all 
-y
-
-nano ~/.bashrc
-#paste this: source /fast/work/users/$USER/bin/miniconda3/etc/profile.d/conda.sh
-# CTRL + X, then Y, then enter to leave
+conda upgrade --all -y
+conda config --set solver libmamba
 
 ```
 
