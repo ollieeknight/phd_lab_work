@@ -1,48 +1,53 @@
-# Using nextflow for high-throughput genetic data processing
-For now I am only going to put my environment variables here. Talk to me if you would like any more guidance!
+# Using nextflow for processing WES data
 
-## Install nextflow and modify dependencies
+## Install nextflow and dependencies
 
-```
-cd ~/work/bin
-wget https://download.oracle.com/java/17/archive/jdk-17.0.7_linux-x64_bin.tar.gz 
+```bash
+# Install Java
+mkdir -p "$HOME/work/bin"
+cd "$HOME/work/bin" || exit
+wget https://download.oracle.com/java/17/archive/jdk-17.0.7_linux-x64_bin.tar.gz
 tar -xf jdk-17.0.7_linux-x64_bin.tar.gz && rm jdk-17.0.7_linux-x64_bin.tar.gz
-export PATH=~/work/bin/jdk-17.0.7/bin:$PATH
-mkdir -p nextflow
-cd nextflow
+export PATH="$HOME/work/bin/jdk-17.0.7/bin:$PATH"
+
+# Install Nextflow
+mkdir -p "$HOME/work/bin/nextflow"
+cd "$HOME/work/bin/nextflow" || exit
 wget -qO- https://get.nextflow.io | bash
-export PATH=~/work/bin/nextflow:$PATH
+export PATH="$HOME/work/bin/nextflow:$PATH"
+nextflow self-update
 
-mkdir -p ~/scratch/nf_work
-mkdir -p ~/work/bin/nextflow/singularity_cache
-
-export NXF_HOME=~/work/bin/nextflow
-export NXF_SINGULARITY_CACHEDIR=~/work/bin/nextflow/singularity_cache
-export NXF_WORK=~/scratch/tmp/nf_work
-export NXF_JAVA_HOME=~/work/bin/jdk-17.0.7
+# Setup directories
+mkdir -p "$HOME/scratch/tmp/nextflow"
+mkdir -p "$HOME/work/bin/nextflow/apptainer_cache"
 ```
-
-## Processing Whole Exome Sequencing (WES) data with [Sarek](https://nf-co.re/sarek)
 
 ### Configuration file - you can also find this under ~/group/ref/WES/
 
 ```bash
 executor {
   name = 'slurm'
-  queueSize = 16
+  queueSize = 32
 }
 
-singularity {
-  enabled = true
+profiles {
+    apptainer {
+        conda.enabled           = false
+        apptainer.enabled       = true
+        apptainer.autoMounts    = true
+        docker.enabled          = false
+        apptainer.runOptions    = '-B /fast'
+    }
 }
 
 env {
-    TMPDIR = '/fast/scratch/users/knighto_c/tmp/nf_work'
-    SINGULARITY_CACHEDIR = '/fast/work/users/knighto_c/bin/nextflow/singularity_cache'
+    TMPDIR = '/fast/scratch/users/knighto_c/tmp/nextflow'
+    APPTAINER_CACHEDIR = '/fast/work/users/knighto_c/bin/nextflow/apptainer_cache'
+    APPTAINERENV_NXF_TASK_WORKDIR = '/fast/scratch/users/knighto_c/tmp/nextflow'
+    APPTAINERENV_TMPDIR = '/fast/scratch/users/knighto_c/tmp/nextflow'
 }
 
 params {
-
     max_memory = 16.GB
     max_cpus = 8
     max_time = 48.h
@@ -89,31 +94,40 @@ params {
 ```
 
 ### Sample sheet
-```
+
+```csv
 patient,status,sample,lane,fastq_1,fastq_2
-PATIENT1,0,CT01,1,~/S8163_fastq/S000021_S8163Nr6.1.fastq.gz,~/S8163_fastq/S000021_S8163Nr6.2.fastq.gz
-PATIENT1,1,NK01,1,~/S8163_fastq/S000021_S8163Nr5.1.fastq.gz,~/S8163_fastq/S000021_S8163Nr5.2.fastq.gz
+PATIENT1,0,CTR01,1,CTR01_R1.fastq.gz,CTR01_R2.fastq.gz
+PATIENT1,1,TMR01,1,TMR01_R1.fastq.gz.TMR01_R1.fastq.gz
 ```
+
 ### Run command
 ```
-nextflow run nf-core/sarek -r 3.2.3 --input samplesheet.csv --outdir outs --genome GATK.GRCh38 --igenomes_base ~/group/work/ref/igenomes -profile singularity -c ~/group/work/ref/WES/cubi.config --tools mutect2,strelka,vep --intervals ~/group/work/ref/WES/hg38_exome_v2.0.2_targets_sorted_validated.re_annotated.bed --wes --only-paired_variant_calling
+nextflow run nf-core/sarek -r 3.4.0 --input samplesheets/hc_paired_samplesheet.csv --outdir outs/HC_paired_outs --genome GATK.GRCh38 --igenomes_base ~/group/work/ref/igenomes -profile apptainer -c ~/group/work/ref/WES/cubi.config --tools mutect2,strelka,vep --intervals ~/group/work/ref/WES/hg38_exome_v2.0.2_targets_sorted_validated.re_annotated.bed --wes --only_paired_variant_calling
 ```
 
 ## Extracting tables from vcf files
-One you have your annotated variants from the `sarek` pipeline, we can extract information from `mutect2`- and `strelka`-run paired samples. You will need to activate your `genome_processing` conda environment, which we created [here](https://github.com/ollieeknight/single_cell_analysis/blob/main/work-environment/conda_environments.md#manipulating-genomic-files) 
+One you have your annotated variants from the `sarek` pipeline, we can extract information from `mutect2`- and `strelka`-run paired samples using bcftools
+
+```bash
+conda create -y -n vcf bcftools samtools bedtools bwa
+conda activate
+```
 
 ### Strelka
-```
+
+```bash
 sample=xyz
 echo -e "CHROM\tPOS\tREF\tALT\tA\tC\tG\tT\tFILTER\t$(bcftools +split-vep -l *snvs_VEP.ann.vcf.gz | cut -f 2 | tr '\n' '\t' | sed 's/\t$//')" > paired_${sample}.tsv && bcftools +split-vep -f '%CHROM\t%POS\t%REF\t%ALT\t[_%AU]\t[_%CU]\t[_%GU]\t[_%TU]\t%FILTER\t%CSQ\n' -d -A tab *snvs_VEP.ann.vcf.gz >> paired_${sample_}.tsv
 ```
+
 This is agnostic of how you label your paired samples - \*snvs_VEP.ann.vcf.gz wildcards the names. 
 
 ### Mutect2
-```
+
+```bash
 sample=xyz
 echo -e "CHROM\tPOS\tREF\tALT\tAF\tDP\tFILTER\t$(bcftools +split-vep -l *_VEP.ann.vcf.gz | cut -f 2 | tr '\n' '\t' | sed 's/\t$//')" > paired_${sample}.tsv && bcftools +split-vep -f '%CHROM\t%POS\t%REF\t%ALT\t[_%AF]\t[_%DP]\t%FILTER\t%CSQ\n' -d -A tab *_VEP.ann.vcf.gz >> paired_${sample}.tsv
 ```
+
 This is agnostic of how you label your paired samples - \*_VEP.ann.vcf.gz wildcards the names. 
-
-
