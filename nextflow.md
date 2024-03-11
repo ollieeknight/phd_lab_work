@@ -22,6 +22,20 @@ mkdir -p "$HOME/scratch/tmp/nextflow"
 mkdir -p "$HOME/work/bin/nextflow/apptainer_cache"
 ```
 
+```bash
+cat <<EOL >> ~/.bashrc
+# Nextflow environment variables
+export NXF_HOME=${HOME}/work/bin/nextflow
+export NXF_JAVA_HOME=${HOME}/work/bin/jdk-17.0.7
+export NXF_TEMP=${HOME}/scratch/tmp/nextflow
+export NXF_APPTAINER_CACHEDIR=${HOME}/work/bin/nextflow/apptainer_cache
+export NXF_WORK=${HOME}/scratch/tmp/nextflow
+export APPTAINERENV_NXF_TASK_WORKDIR=${HOME}/scratch/tmp/nextflow
+export APPTAINERENV_TMPDIR=${HOME}/scratch/tmp/nextflow
+export NXF_APPTAINER_HOME_MOUNT=true
+EOL
+```
+
 ### Configuration file - you can also find this under ~/group/ref/WES/
 
 ```bash

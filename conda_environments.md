@@ -1,7 +1,7 @@
 # Setting up conda environments for processing genomics files
 Once you've logged into the BIH-CUBI cluster through the command line, setting up your conda environments is crucial for processing genetic data.
 ```shell
-mkdir ~/work/bin/ && cd ~/work/bin/
+mkdir $HOME/work/bin/ && cd $HOME/work/bin/
 
 # download, install, and update miniconda 
 curl -L https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o Miniconda3-latest-Linux-x86_64.sh
@@ -27,38 +27,43 @@ conda config --set solver libmamba
 ```
 
 ## Processing raw BCL files
-```shell
-conda create -y -n bcl_to_fastq -c bih-cubi bcl2fastq2
+```bash
+conda create -y -n bcl2fastq2 -c bih-cubi bcl2fastq2
 ```
 
 ## Genotyping genomic BAM files
-```shell
-conda create -y -n donor_genotyping python cellsnp-lite  
-conda activate donor_genotyping
+```bash
+conda create -y -n vireo python cellsnp-lite  
+conda activate vireo
 pip install vireoSNP
 ```
 
 ## Doublet detection from scATAC fragment overlap
-```shell
-conda create -y -n amulet_overlap numpy=1.19 pandas scipy statsmodels
+```bash
+conda create -y -n amulet numpy=1.19 pandas scipy statsmodels
+
+# Then install AMULET via 
+git clone https://github.com/UcarLab/AMULET
 ```
 
 ## Genotyping scATAC mitochondrial DNA
-```shell
-conda create -y -n mitochondrial_genotyping openjdk r-base=4.2.3 r-data.table r-matrix bioconductor-genomicranges bioconductor-summarizedexperiment ruamel.yaml==0.17.35 snakemake==7.32.4 pyyaml==6.0.1 yaml=0.2.5  
-conda activate mitochondrial_genotyping
+```bash
+conda create -y -n mgatk openjdk r-base=4.2.3 r-data.table r-matrix bioconductor-genomicranges bioconductor-summarizedexperiment
+conda activate mgatk
 pip install mgatk
+
+# Important to note: mgatk requires ~8gb RAM per core and so it's best to run with -c 8 and >64 GB RAM 
 ```
 
 ## Collating antibody capture counts per cell
-```shell
-conda create -y -n adt_count python kallisto bustools 
-conda activate adt_count
+```bash
+conda create -y -n kite python kallisto bustools 
+conda activate kite
 pip install bio
 ```
 
 ## Cellbender
-```shell
+```bash
 conda create -y -n cellbender -c nvidia python=3.7 cuda-toolkit cuda-nvcc
 conda activate cellbender
 pip install cellbender
@@ -66,13 +71,13 @@ pip install cellbender
 
 ## Manipulating genomic files
 
-```shell
-conda create -y -n genome_processing bcftools samtools bedtools bwa
+```bash
+conda create -y -n vcf bcftools samtools bedtools bwa
 ```
 
 ## Using python packages in `R` through `reticulate`
 
-```shell
+```bash
 conda create -y -n r-reticulate -c vtraag python-igraph pandas umap-learn scanpy macs2 scvi-tools
 conda activate r-reticulate
 conda install -c vtraag leidenalg
@@ -90,4 +95,4 @@ And for MACS2 peaks calling:
 ```R
 peaks <- Signac::CallPeaks(alldata, assay = 'ATAC', macs2.path = '~/bin/miniconda3/envs/r-reticulate/bin/macs2')
 ```
-Where `alldata` is your seurat object.
+Where `alldata` is your seurat object, with your 'ATAC' (peaks) object set as the default assay.
