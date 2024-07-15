@@ -1,0 +1,4 @@
+id,name,read,pattern,sequence,feature_type
+Hashtag1,Hashtag1,R2,5PNNNNNNNNNN(BC),GTCAACTCTTTAGCG,Antibody Capture
+Hashtag2,Hashtag2,R2,5PNNNNNNNNNN(BC),TGATGGCCTATTGGG,Antibody Capture
+Hashtag3,Hashtag3,R2,5PNNNNNNNNNN(BC),TTCCGCCTCTCTTTG,Antibody Capture
