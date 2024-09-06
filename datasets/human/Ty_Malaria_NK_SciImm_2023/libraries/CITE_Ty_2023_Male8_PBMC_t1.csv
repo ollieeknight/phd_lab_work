@@ -1,0 +1,11 @@
+[gene-expression]
+reference,/data/cephfs-2/unmirrored/groups/romagnani/work/ref/hs/GRCh38-hardmasked-optimised-arc
+create-bam,false
+
+[feature]
+reference,/data/cephfs-1/home/users/knighto_c/scratch/ngs/ty_2023/scripts/ty_2023_ADT_list.csv
+
+[libraries]
+fastq_id,fastqs,feature_types
+CITE_Ty_2023_Male8_PBMC_t1_GEX,/data/cephfs-1/home/users/knighto_c/scratch/ngs/ty_2023/fastq/SRR21007427,Gene Expression
+CITE_Ty_2023_Male8_PBMC_t1_ADT,/data/cephfs-1/home/users/knighto_c/scratch/ngs/ty_2023/fastq/SRR21007429,Antibody Capture

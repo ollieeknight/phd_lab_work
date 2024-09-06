@@ -1,0 +1,6 @@
+id,name,read,pattern,sequence,feature_type
+CD16,CD16,R2,5P(BC),AAGTTCACTCTTTGC,Antibody Capture
+CD19,CD19,R2,5P(BC),CTGGGCAATTACTCG,Antibody Capture
+CD3,CD3,R2,5P(BC),CTCATTGTAACTCCT,Antibody Capture
+CD45,CD45,R2,5P(BC),TCCCTTGCGATTTAC,Antibody Capture
+CD56,CD56,R2,5P(BC),TTCGCCGCATTGAGT,Antibody Capture

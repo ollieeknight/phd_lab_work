@@ -80,7 +80,7 @@ map_to_tonsil_reference <- function(seurat_object) {
   }
   return(seurat_object)
 }
-
+ 
 map_to_tilp_reference <- function(seurat_object) {
   if (!requireNamespace("Azimuth", quietly = TRUE)) {
     stop("Azimuth is required but not installed")
@@ -88,7 +88,7 @@ map_to_tilp_reference <- function(seurat_object) {
   if (ncol(seurat_object) > 100) {
     # Check if 'tilp_reference' is loaded in the environment
     if (!exists("tilp_reference", envir = .GlobalEnv)) {
-      tilp_reference <<- readRDS('~/group/work/data/NK_IBD/objects/GEX_Colonna_TILP.rds')
+      tilp_reference <<- readRDS('~/share/ngs/datasets/tissue_ilc/objects/GEX_Colonna_TILP.rds')
     }
     print(paste0('Mapping ', names(table(seurat_object$orig.ident)), ' to Colonna TILP reference'))
     print('Generating transfer anchors between datasets...')
@@ -107,26 +107,40 @@ map_to_tilp_reference <- function(seurat_object) {
       suppressMessages(suppressWarnings({
         test <- Seurat::MapQuery(
           anchorset = anchors, query = seurat_object,
-          reference = tilp_reference, refdata = tilp_reference$celltype,
+          reference = tilp_reference, refdata = list(celltype_l2 = tilp_reference$celltype_l2,
+                                                     celltype_l3 = tilp_reference$celltype_l3,
+                                                     celltype_l4 = tilp_reference$celltype_l4),
           reference.reduction = 'harmony_ref', reference.dims = 1:30,
           query.dims = 1:30, reduction.model = 'umap_rna', verbose = FALSE
         )
       }))
       
-      seurat_object$Colonna_TILP_reference_celltype <- test$predicted.id
-      seurat_object$score_Colonna_TILP_reference_celltype_score <- test$predicted.id.score
+      seurat_object$Colonna_TILP_reference_celltype_l2 <- test$predicted.celltype_l2
+      seurat_object$score_Colonna_TILP_reference_celltype_l2 <- test$predicted.celltype_l2.score
+      seurat_object$Colonna_TILP_reference_celltype_l3 <- test$predicted.celltype_l3
+      seurat_object$score_Colonna_TILP_reference_celltype_l3 <- test$predicted.celltype_l3.score
+      seurat_object$Colonna_TILP_reference_celltype_l4 <- test$predicted.celltype_l4
+      seurat_object$score_Colonna_TILP_reference_celltype_l4 <- test$predicted.celltype_l4.score
       rm(anchors, test)
       gc()
     }, error = function(e) {
       # Code to handle the error
       print(paste("Error during processing:", e$message))
-      seurat_object$Colonna_TILP_reference_celltype <- 'Unmapped'
-      seurat_object$score_Colonna_TILP_reference_celltype_score <- 0
+      seurat_object$Colonna_TILP_reference_celltype_l2 <- 'Unmapped'
+      seurat_object$score_Colonna_TILP_reference_celltype_l2 <- 0
+      seurat_object$Colonna_TILP_reference_celltype_l3 <- 'Unmapped'
+      seurat_object$score_Colonna_TILP_reference_celltype_l3 <- 0
+      seurat_object$Colonna_TILP_reference_celltype_l4 <- 'Unmapped'
+      seurat_object$score_Colonna_TILP_reference_celltype_l4 <- 0
     })
   } else {
     print('Library has too few cells to annotate confidently...')
-    seurat_object$Colonna_TILP_reference_celltype <- 'Unmapped'
-    seurat_object$score_Colonna_TILP_reference_celltype_score <- 0
+    seurat_object$Colonna_TILP_reference_celltype_l2 <- 'Unmapped'
+    seurat_object$score_Colonna_TILP_reference_celltype_l2 <- 0
+    seurat_object$Colonna_TILP_reference_celltype_l3 <- 'Unmapped'
+    seurat_object$score_Colonna_TILP_reference_celltype_l3 <- 0
+    seurat_object$Colonna_TILP_reference_celltype_l4 <- 'Unmapped'
+    seurat_object$score_Colonna_TILP_reference_celltype_l4 <- 0
   }
   return(seurat_object)
 }
@@ -216,41 +230,41 @@ map_to_zhang_bmmc_reference <- function(seurat_object, assay = 'RNA') {
     print(paste0('Mapping ', names(table(seurat_object$orig.ident)), ' to Zhang BMMC reference'))
     tryCatch({
       suppressMessages(suppressWarnings({
-        mapdata <- Azimuth::RunAzimuth(seurat_object, reference = '~/group/work/data/datasets/BMMC_atlas/data/ref/', assay = 'RNA', verbose = FALSE)
+        mapdata <- Azimuth::RunAzimuth(seurat_object, reference = '~/group/work/ref/seurat/Zhang_2024_BMMC_reference', assay = 'RNA', verbose = FALSE)
       }))
       
       print('Adding predictions to object...')
-      seurat_object$zhang_reference_celltype_l1 <- mapdata$predicted.Level1
-      seurat_object$score_zhang_reference_celltype_l1 <- mapdata$predicted.Level1.score
-      seurat_object$zhang_reference_celltype_l2 <- mapdata$predicted.Level2
-      seurat_object$score_zhang_reference_celltype_l2 <- mapdata$predicted.Level2.score
-      seurat_object$zhang_reference_celltype_l3 <- mapdata$predicted.Level3R
-      seurat_object$score_zhang_reference_celltype_l3 <- mapdata$predicted.Level3R.score
-      seurat_object$zhang_reference_celltype_l4 <- mapdata$predicted.Level3M
-      seurat_object$score_zhang_reference_celltype_l4 <- mapdata$predicted.Level3M.score
+      seurat_object$zhang_bmmc_reference_celltype_l1 <- mapdata$predicted.Level1
+      seurat_object$score_bmmc_zhang_reference_celltype_l1 <- mapdata$predicted.Level1.score
+      seurat_object$zhang_bmmc_reference_celltype_l2 <- mapdata$predicted.Level2
+      seurat_object$score_bmmc_zhang_reference_celltype_l2 <- mapdata$predicted.Level2.score
+      seurat_object$zhang_bmmc_reference_celltype_l3 <- mapdata$predicted.Level3R
+      seurat_object$score_bmmc_zhang_reference_celltype_l3 <- mapdata$predicted.Level3R.score
+      seurat_object$zhang_bmmc_reference_celltype_l4 <- mapdata$predicted.Level3M
+      seurat_object$score_bmmc_zhang_reference_celltype_l4 <- mapdata$predicted.Level3M.score
       gc()
     }, error = function(e) {
       # Code to handle the error
       print(paste("Error during processing:", e$message))
-      seurat_object$zhang_reference_celltype_l1 <- 'Unmapped'
-      seurat_object$score_zhang_reference_celltype_l1 <- 0
-      seurat_object$zhang_reference_celltype_l2 <- 'Unmapped'
-      seurat_object$score_zhang_reference_celltype_l2 <- 0
-      seurat_object$zhang_reference_celltype_l3 <- 'Unmapped'
-      seurat_object$score_zhang_reference_celltype_l3 <- 0
-      seurat_object$zhang_reference_celltype_l4 <- 'Unmapped'
-      seurat_object$score_zhang_reference_celltype_l4 <- 0
+      seurat_object$zhang_bmmc_reference_celltype_l1 <- 'Unmapped'
+      seurat_object$score_bmmc_zhang_reference_celltype_l1 <- 0
+      seurat_object$zhang_bmmc_reference_celltype_l2 <- 'Unmapped'
+      seurat_object$score_bmmc_zhang_reference_celltype_l2 <- 0
+      seurat_object$zhang_bmmc_reference_celltype_l3 <- 'Unmapped'
+      seurat_object$score_bmmc_zhang_reference_celltype_l3 <- 0
+      seurat_object$zhang_bmmc_reference_celltype_l4 <- 'Unmapped'
+      seurat_object$score_bmmc_zhang_reference_celltype_l4 <- 0
     })
   } else {
     print('Library has too few cells to annotate confidently...')
-    seurat_object$zhang_reference_celltype_l1 <- 'Unmapped'
-    seurat_object$score_zhang_reference_celltype_l1 <- 0
-    seurat_object$zhang_reference_celltype_l2 <- 'Unmapped'
-    seurat_object$score_zhang_reference_celltype_l2 <- 0
-    seurat_object$zhang_reference_celltype_l3 <- 'Unmapped'
-    seurat_object$score_zhang_reference_celltype_l3 <- 0
-    seurat_object$zhang_reference_celltype_l4 <- 'Unmapped'
-    seurat_object$score_zhang_reference_celltype_l4 <- 0
+    seurat_object$zhang_bmmc_reference_celltype_l1 <- 'Unmapped'
+    seurat_object$score_bmmc_zhang_reference_celltype_l1 <- 0
+    seurat_object$zhang_bmmc_reference_celltype_l2 <- 'Unmapped'
+    seurat_object$score_bmmc_zhang_reference_celltype_l2 <- 0
+    seurat_object$zhang_bmmc_reference_celltype_l3 <- 'Unmapped'
+    seurat_object$score_bmmc_zhang_reference_celltype_l3 <- 0
+    seurat_object$zhang_bmmc_reference_celltype_l4 <- 'Unmapped'
+    seurat_object$score_bmmc_zhang_reference_celltype_l4 <- 0
   }
   return(seurat_object)
 }
@@ -413,4 +427,70 @@ compare_overlaps <- function(libraries, top_n = 10) {
   top_n_overlaps <- head(overlap_df, top_n)
   
   return(top_n_overlaps)
+}
+
+normalise_cell_number <- function(seurat_object, metadata_column) {
+  # Get the cell counts for each condition
+  cell_counts <- table(seurat_object[[metadata_column]])
+  
+  # Set the identity class of the Seurat object to the specified metadata column
+  seurat_object <- SetIdent(seurat_object, value = metadata_column)
+  
+  # Find the minimum cell count
+  min_cells <- min(cell_counts)
+  
+  # Subset the Seurat object for each condition to the minimum cell count
+  subset_seurat_object <- subset(seurat_object, cells = unlist(lapply(names(cell_counts), function(cond) {
+    cells_in_cond <- WhichCells(seurat_object, idents = cond) # Corrected parameter name to 'idents'
+    sample(cells_in_cond, min_cells)
+  })))
+  
+  return(subset_seurat_object)
+}
+
+split_layer_filter <- function(seurat_object, metadata_column) {
+
+  metadata_table <- table(seurat_object[[metadata_column]])
+  
+  # Get donor_ids with a count of 1
+  entries_to_remove <- names(metadata_table[metadata_table == 1])
+  
+  metadata_column <- gsub('"', '', metadata_column)
+  
+  # Check if donor_ids is not empty
+  if (length(entries_to_remove) > 0) {
+    seurat_object <- seurat_object[, !seurat_object@meta.data[[metadata_column]] %in% entries_to_remove]
+  }
+
+  return(seurat_object)
+}
+
+# Define the function
+calculate_percentage_above_zero <- function(seurat_object, gene_of_interest, metadata_column) {
+  # Check if the gene is in the Seurat object
+  if (!(gene_of_interest %in% rownames(seurat_object))) {
+    stop("Gene not found in Seurat object")
+  }
+  
+  # Extract metadata and expression data for the gene
+  metadata <- seurat_object@meta.data
+  gene_expression <- FetchData(seurat_object, vars = gene_of_interest)
+  
+  # Add gene expression to the metadata
+  metadata[[gene_of_interest]] <- gene_expression[[gene_of_interest]]
+  
+  # Group by the specified metadata column and calculate the percentage of cells with gene expression > 0
+  percent_above_0 <- metadata %>%
+    group_by(!!sym(metadata_column)) %>%
+    summarise(percentage = mean(!!sym(gene_of_interest) > 0) * 100)
+  
+  # Return the results
+  return(percent_above_0)
+}
+
+
+plot_a_list <- function(master_list_with_plots, no_of_rows, no_of_cols) {
+  
+  patchwork::wrap_plots(master_list_with_plots, 
+                        nrow = no_of_rows, ncol = no_of_cols)
 }
