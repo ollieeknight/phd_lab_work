@@ -34,6 +34,7 @@ cols$ILCs <- c('darkblue', 'deepskyblue4', 'deepskyblue2', '#D55882', '#492351',
 scale <- c()
 scale$rna <- colorRampPalette(c('#f3d8e1', '#8da0cf', '#1a69d0', '#353979', '#300b36'))(100)
 scale$adt <- colorRampPalette(c("#E5F5E0", "#C7E9C0", "#A1D99B", "#74C476", "#41AB5D", "#238B45", "#006D2C", "#125B49"))(100)
+scale$adt2 <- colorRampPalette(c('#DEDDD3', '#ACB9AF', '#699B84', '#305949', '#012015'))(100)
 scale$dotplot <- colorRampPalette(c('#FFF5E0', '#FFDE73', '#F9BC4F', '#EE7744', '#2C7C79', '#4C4D78'))(100)
 scale$score1 <- colorRampPalette(c('#EBE2BC', '#FFBE5F', '#FB7D2D', '#DB242E', '#003147'))(100)
 scale$score2 <- colorRampPalette(c('#F4EACB', '#EDA64E', '#E6403C', '#9B242E', '#55281E'))(100)
@@ -53,28 +54,43 @@ themes$UMAP_theme <- list(
     x = themes$UMAP_axis, 
     y = themes$UMAP_axis
   ),
-  labs(title = NULL, x = 'UMAP_1', y = 'UMAP_2'),
+  labs(x = 'UMAP_1', y = 'UMAP_2'),
   theme(
     axis.title.x = element_markdown(size = 8, hjust = 0),
     axis.title.y = element_markdown(size = 8, hjust = 0),
     axis.text.x = element_markdown(size = 0),
     axis.text.y = element_markdown(size = 0),
     axis.ticks = element_blank(),
-    legend.title = element_blank(),
-    legend.text = element_markdown(size = 12, margin = margin(r = 0.01, unit = 'npc'), vjust = 0),
     legend.position = 'right',
-    axis.line = element_line(arrow = arrow(length = unit(2.5, 'npc'), type = 'closed')),
+    axis.line = element_line(arrow = arrow(length = unit(3.0, 'npc'), type = 'closed')),
     plot.margin = margin(0.01, 0.01, 0.01, 0.01, 'npc')
   ),
-  coord_fixed(),
-  guides(color = guide_legend(override.aes = list(size = 4))))
+  coord_fixed())
+
+themes$feature_plot_theme <- list(
+  guides(
+    x = themes$UMAP_axis, 
+    y = themes$UMAP_axis
+  ),
+  labs(x = 'UMAP_1', y = 'UMAP_2'),
+  theme(
+    axis.title.x = element_markdown(size = 8, hjust = 0),
+    axis.title.y = element_markdown(size = 8, hjust = 0),
+    axis.text.x = element_markdown(size = 0),
+    axis.text.y = element_markdown(size = 0),
+    axis.ticks = element_blank(),
+    legend.position = 'right',
+    axis.line = element_line(arrow = arrow(length = unit(3.0, 'npc'), type = 'closed')),
+    plot.margin = margin(0.01, 0.01, 0.01, 0.01, 'npc')
+  ),
+  coord_fixed())
 
 themes$violin_split_theme <- list(
   theme(strip.text.x = element_text(size = 16, face = 'italic'),
-        axis.title.x = element_blank(),
-        axis.title.y = element_text(size = 12, colour = 'black'),
-        axis.text.x = element_text(size = 10, colour = 'black', angle = 45, vjust = 0.6),
-        axis.text.y = element_text(size = 10, colour = 'black'),
+        plot.title = element_markdown(size = 16, colour = 'black', face = 'italic'),
+        axis.text.x = element_markdown(size = 12, colour = 'black'),
+        axis.title.y = element_markdown(size = 14, colour = 'black'),
+        axis.text.y = element_markdown(size = 12, colour = 'black'),
         plot.margin = margin(0.01, 0.01, 0.01, 0.01, 'npc'),
         strip.background.x = element_blank(),
         strip.placement = 'outside',
