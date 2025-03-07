@@ -1,4 +1,3 @@
-
 plot_metrics_ribosomal <- function(seurat_object, RNA_cutoff, ribosomal_cutoff) {
   if (!requireNamespace("tidyverse", quietly = TRUE)) {
     stop("Tidyverse is required but not installed")
@@ -40,31 +39,43 @@ map_to_tonsil_reference <- function(seurat_object) {
       tonsil_reference <<- readRDS('~/group/work/data/tissue_progenitor/objects/DOGMA_objects.rds')
       tonsil_reference <<- tonsil_reference[['CITE_Romagnani']]
     }
+    print(paste0('Mapping ', names(table(seurat_object$orig.ident)), ' to Romagnani tonsil reference'))
     print('Generating transfer anchors between datasets...')
-    suppressMessages(suppressWarnings({
-      anchors <- Seurat::FindTransferAnchors(
-        reference = tonsil_reference, query = seurat_object,
-        reference.assay = 'RNA', query.assay = 'RNA',
-        reduction = 'pcaproject', reference.reduction = 'harmony_ref',
-        dims = 1:30, verbose = FALSE
-      )
-    }))    
-    print('Mapping query against reference...')
-    suppressMessages(suppressWarnings({
-      test <- Seurat::MapQuery(
-        anchorset = anchors, query = seurat_object,
-        reference = tonsil_reference, refdata = tonsil_reference$celltype,
-        reference.reduction = 'harmony_ref', reference.dims = 1:30,
-        query.dims = 1:30, reduction.model = 'umap_rna', verbose = FALSE
-      )
-    }))
-    
-    seurat_object$Romagnani_tonsil_reference_celltype <- test$predicted.id
-    seurat_object$score_Romagnani_tonsil_reference_celltype <- test$predicted.id.score
-    rm(anchors, test)
-    gc()
+    tryCatch({
+      suppressMessages(suppressWarnings({
+        anchors <- Seurat::FindTransferAnchors(
+          reference = tonsil_reference, query = seurat_object,
+          reference.assay = 'RNA', query.assay = 'RNA',
+          reduction = 'pcaproject', reference.reduction = 'harmony_ref',
+          dims = 1:30, verbose = FALSE
+        )
+      }))
+      gc()
+      
+      print('Mapping query against reference...')
+      suppressMessages(suppressWarnings({
+        test <- Seurat::MapQuery(
+          anchorset = anchors, query = seurat_object,
+          reference = tonsil_reference, refdata = tonsil_reference$celltype,
+          reference.reduction = 'harmony_ref', reference.dims = 1:30,
+          query.dims = 1:30, reduction.model = 'umap_rna', verbose = FALSE
+        )
+      }))
+      
+      seurat_object$Romagnani_tonsil_reference_celltype <- test$predicted.id
+      seurat_object$score_Romagnani_tonsil_reference_celltype <- test$predicted.id.score
+      rm(anchors, test)
+      gc()
+    }, error = function(e) {
+      # Code to handle the error
+      print(paste("Error during processing:", e$message))
+      seurat_object$Romagnani_tonsil_reference_celltype <- 'Unmapped'
+      seurat_object$score_Romagnani_tonsil_reference_celltype <- 0
+    })
   } else {
-    print('Library has too few cells to annotate confidently (i.e. < 100)')
+    print('Library has too few cells to annotate confidently...')
+    seurat_object$Romagnani_tonsil_reference_celltype <- 'Unmapped'
+    seurat_object$score_Romagnani_tonsil_reference_celltype <- 0
   }
   return(seurat_object)
 }
@@ -78,38 +89,57 @@ map_to_tilp_reference <- function(seurat_object) {
     if (!exists("tilp_reference", envir = .GlobalEnv)) {
       tilp_reference <<- readRDS('~/share/ngs/datasets/tissue_ilc/objects/GEX_Colonna_TILP.rds')
     }
+    print(paste0('Mapping ', names(table(seurat_object$orig.ident)), ' to Colonna TILP reference'))
     print('Generating transfer anchors between datasets...')
-    suppressMessages(suppressWarnings({
-      anchors <- Seurat::FindTransferAnchors(
-        reference = tilp_reference, query = seurat_object,
-        reference.assay = 'RNA', query.assay = 'RNA',
-        reduction = 'pcaproject', reference.reduction = 'harmony_ref',
-        dims = 1:30, k.filter = NA, verbose = FALSE
-      )
-    }))
-    
-    print('Mapping query against reference...')
-    suppressMessages(suppressWarnings({
-      test <- Seurat::MapQuery(
-        anchorset = anchors, query = seurat_object,
-        reference = tilp_reference, refdata = list(celltype_l2 = tilp_reference$celltype_l2,
-                                                   celltype_l3 = tilp_reference$celltype_l3,
-                                                   celltype_l4 = tilp_reference$celltype_l4),
-        reference.reduction = 'harmony_ref', reference.dims = 1:30,
-        query.dims = 1:30, reduction.model = 'umap_rna', verbose = FALSE
-      )
-    }))
-    
-    seurat_object$Colonna_TILP_reference_celltype_l2 <- test$predicted.celltype_l2
-    seurat_object$score_Colonna_TILP_reference_celltype_l2 <- test$predicted.celltype_l2.score
-    seurat_object$Colonna_TILP_reference_celltype_l3 <- test$predicted.celltype_l3
-    seurat_object$score_Colonna_TILP_reference_celltype_l3 <- test$predicted.celltype_l3.score
-    seurat_object$Colonna_TILP_reference_celltype_l4 <- test$predicted.celltype_l4
-    seurat_object$score_Colonna_TILP_reference_celltype_l4 <- test$predicted.celltype_l4.score
-    rm(anchors, test)
-    gc()
-    } else {
-    print('Library has too few cells to annotate confidently (i.e. < 100)')
+    tryCatch({
+      suppressMessages(suppressWarnings({
+        anchors <- Seurat::FindTransferAnchors(
+          reference = tilp_reference, query = seurat_object,
+          reference.assay = 'RNA', query.assay = 'RNA',
+          reduction = 'pcaproject', reference.reduction = 'harmony_ref',
+          dims = 1:30, k.filter = NA, verbose = FALSE
+        )
+      }))
+      gc()
+      
+      print('Mapping query against reference...')
+      suppressMessages(suppressWarnings({
+        test <- Seurat::MapQuery(
+          anchorset = anchors, query = seurat_object,
+          reference = tilp_reference, refdata = list(celltype_l2 = tilp_reference$celltype_l2,
+                                                     celltype_l3 = tilp_reference$celltype_l3,
+                                                     celltype_l4 = tilp_reference$celltype_l4),
+          reference.reduction = 'harmony_ref', reference.dims = 1:30,
+          query.dims = 1:30, reduction.model = 'umap_rna', verbose = FALSE
+        )
+      }))
+      
+      seurat_object$Colonna_TILP_reference_celltype_l2 <- test$predicted.celltype_l2
+      seurat_object$score_Colonna_TILP_reference_celltype_l2 <- test$predicted.celltype_l2.score
+      seurat_object$Colonna_TILP_reference_celltype_l3 <- test$predicted.celltype_l3
+      seurat_object$score_Colonna_TILP_reference_celltype_l3 <- test$predicted.celltype_l3.score
+      seurat_object$Colonna_TILP_reference_celltype_l4 <- test$predicted.celltype_l4
+      seurat_object$score_Colonna_TILP_reference_celltype_l4 <- test$predicted.celltype_l4.score
+      rm(anchors, test)
+      gc()
+    }, error = function(e) {
+      # Code to handle the error
+      print(paste("Error during processing:", e$message))
+      seurat_object$Colonna_TILP_reference_celltype_l2 <- 'Unmapped'
+      seurat_object$score_Colonna_TILP_reference_celltype_l2 <- 0
+      seurat_object$Colonna_TILP_reference_celltype_l3 <- 'Unmapped'
+      seurat_object$score_Colonna_TILP_reference_celltype_l3 <- 0
+      seurat_object$Colonna_TILP_reference_celltype_l4 <- 'Unmapped'
+      seurat_object$score_Colonna_TILP_reference_celltype_l4 <- 0
+    })
+  } else {
+    print('Library has too few cells to annotate confidently...')
+    seurat_object$Colonna_TILP_reference_celltype_l2 <- 'Unmapped'
+    seurat_object$score_Colonna_TILP_reference_celltype_l2 <- 0
+    seurat_object$Colonna_TILP_reference_celltype_l3 <- 'Unmapped'
+    seurat_object$score_Colonna_TILP_reference_celltype_l3 <- 0
+    seurat_object$Colonna_TILP_reference_celltype_l4 <- 'Unmapped'
+    seurat_object$score_Colonna_TILP_reference_celltype_l4 <- 0
   }
   return(seurat_object)
 }
@@ -119,20 +149,38 @@ map_to_azimuth_pbmc_reference <- function(seurat_object, assay = 'RNA') {
     stop("Azimuth is required but not installed")
   }
   if (ncol(seurat_object) > 100) {
-    suppressMessages(suppressWarnings({
-      mapdata <- Azimuth::RunAzimuth(seurat_object, reference = 'pbmcref', assay = assay, verbose = FALSE)
-    }))
-    
-    print('Adding predictions to object...')
-    seurat_object$azimuth_pbmc_reference_celltype_l1 <- mapdata$predicted.celltype.l1
-    seurat_object$score_azimuth_pbmc_reference_celltype_l1 <- mapdata$predicted.celltype.l1.score
-    seurat_object$azimuth_pbmc_reference_celltype_l2 <- mapdata$predicted.celltype.l2
-    seurat_object$score_azimuth_pbmc_reference_celltype_l2 <- mapdata$predicted.celltype.l2.score
-    seurat_object$azimuth_pbmc_reference_celltype_l3 <- mapdata$predicted.celltype.l3
-    seurat_object$score_azimuth_pbmc_reference_celltype_l3 <- mapdata$predicted.celltype.l3.score
-    gc()
+    print(paste0('Mapping ', names(table(seurat_object$orig.ident)), ' to Azimuth PBMC reference'))
+    tryCatch({
+      suppressMessages(suppressWarnings({
+        mapdata <- Azimuth::RunAzimuth(seurat_object, reference = 'pbmcref', assay = assay, verbose = FALSE)
+      }))
+      
+      print('Adding predictions to object...')
+      seurat_object$azimuth_pbmc_reference_celltype_l1 <- mapdata$predicted.celltype.l1
+      seurat_object$score_azimuth_pbmc_reference_celltype_l1 <- mapdata$predicted.celltype.l1.score
+      seurat_object$azimuth_pbmc_reference_celltype_l2 <- mapdata$predicted.celltype.l2
+      seurat_object$score_azimuth_pbmc_reference_celltype_l2 <- mapdata$predicted.celltype.l2.score
+      seurat_object$azimuth_pbmc_reference_celltype_l3 <- mapdata$predicted.celltype.l3
+      seurat_object$score_azimuth_pbmc_reference_celltype_l3 <- mapdata$predicted.celltype.l3.score
+      gc()
+    }, error = function(e) {
+      # Code to handle the error
+      print(paste("Error during processing:", e$message))
+      seurat_object$azimuth_pbmc_reference_celltype_l1 <- 'Unmapped'
+      seurat_object$score_azimuth_pbmc_reference_celltype_l1 <- 0
+      seurat_object$azimuth_pbmc_reference_celltype_l2 <- 'Unmapped'
+      seurat_object$score_azimuth_pbmc_reference_celltype_l2 <- 0
+      seurat_object$azimuth_pbmc_reference_celltype_l3 <- 'Unmapped'
+      seurat_object$score_azimuth_pbmc_reference_celltype_l3 <- 0
+    })
   } else {
-    print('Library has too few cells to annotate confidently (i.e. < 100)')
+    print('Library has too few cells to annotate confidently...')
+    seurat_object$azimuth_pbmc_reference_celltype_l1 <- 'Unmapped'
+    seurat_object$score_azimuth_pbmc_reference_celltype_l1 <- 0
+    seurat_object$azimuth_pbmc_reference_celltype_l2 <- 'Unmapped'
+    seurat_object$score_azimuth_pbmc_reference_celltype_l2 <- 0
+    seurat_object$azimuth_pbmc_reference_celltype_l3 <- 'Unmapped'
+    seurat_object$score_azimuth_pbmc_reference_celltype_l3 <- 0
   }
   return(seurat_object)
 }
@@ -142,19 +190,34 @@ map_to_v4_pbmc_reference <- function(seurat_object, assay = 'RNA') {
     stop("Azimuth is required but not installed")
   }
   if (ncol(seurat_object) > 100) {
-    suppressMessages(suppressWarnings({
-      mapdata <- Azimuth::RunAzimuth(seurat_object, reference = '~/group/work/ref/seurat/v4_reference/', assay = assay, verbose = FALSE)
-    }))
+    print(paste0('Mapping ', names(table(seurat_object$orig.ident)), ' to 10x 3prime v4 PBMC reference'))
+    tryCatch({
+      suppressMessages(suppressWarnings({
+        mapdata <- Azimuth::RunAzimuth(seurat_object, reference = '~/group/work/ref/seurat/v4_reference/', assay = assay, verbose = FALSE)
+      }))
       
-    print('Adding predictions to object...')
-    seurat_object$v4_10x_pbmc_reference_celltype_l1 <- mapdata$predicted.celltype_l1
-    seurat_object$score_v4_10x_pbmc_reference_celltype_l1 <- mapdata$predicted.celltype_l1.score
-    seurat_object$v4_10x_pbmc_reference_celltype_l2 <- mapdata$predicted.celltype_l2
-    seurat_object$score_v4_10x_pbmc_reference_celltype_l2 <- mapdata$predicted.celltype_l2.score
-    gc()
+      print('Adding predictions to object...')
+      seurat_object$v4_10x_pbmc_reference_celltype_l1 <- mapdata$predicted.celltype_l1
+      seurat_object$score_v4_10x_pbmc_reference_celltype_l1 <- mapdata$predicted.celltype_l1.score
+      seurat_object$v4_10x_pbmc_reference_celltype_l2 <- mapdata$predicted.celltype_l2
+      seurat_object$score_v4_10x_pbmc_reference_celltype_l2 <- mapdata$predicted.celltype_l2.score
+      gc()
+    }, error = function(e) {
+      # Code to handle the error
+      print(paste("Error during processing:", e$message))
+      seurat_object$v4_10x_pbmc_reference_celltype_l1 <- 'Unmapped'
+      seurat_object$score_v4_10x_pbmc_reference_celltype_l1 <- 0
+      seurat_object$v4_10x_pbmc_reference_celltype_l2 <- 'Unmapped'
+      seurat_object$score_v4_10x_pbmc_reference_celltype_l2 <- 0
+    })
   } else {
-    print('Library has too few cells to annotate confidently (i.e. < 100)')
-  }  return(seurat_object)
+    print('Library has too few cells to annotate confidently...')
+    seurat_object$v4_10x_pbmc_reference_celltype_l1 <- 'Unmapped'
+    seurat_object$score_v4_10x_pbmc_reference_celltype_l1 <- 0
+    seurat_object$v4_10x_pbmc_reference_celltype_l2 <- 'Unmapped'
+    seurat_object$score_v4_10x_pbmc_reference_celltype_l2 <- 0
+  }
+  return(seurat_object)
 }
 
 
@@ -164,6 +227,7 @@ map_to_zhang_bmmc_reference <- function(seurat_object, assay = 'RNA') {
   }
   if (ncol(seurat_object) > 100) {
     print(paste0('Mapping ', names(table(seurat_object$orig.ident)), ' to Zhang BMMC reference'))
+    tryCatch({
       suppressMessages(suppressWarnings({
         mapdata <- Azimuth::RunAzimuth(seurat_object, reference = '~/group/work/ref/seurat/Zhang_2024_BMMC_reference', assay = 'RNA', verbose = FALSE)
       }))
@@ -178,17 +242,40 @@ map_to_zhang_bmmc_reference <- function(seurat_object, assay = 'RNA') {
       seurat_object$zhang_bmmc_reference_celltype_l4 <- mapdata$predicted.Level3M
       seurat_object$score_bmmc_zhang_reference_celltype_l4 <- mapdata$predicted.Level3M.score
       gc()
+    }, error = function(e) {
+      # Code to handle the error
+      print(paste("Error during processing:", e$message))
+      seurat_object$zhang_bmmc_reference_celltype_l1 <- 'Unmapped'
+      seurat_object$score_bmmc_zhang_reference_celltype_l1 <- 0
+      seurat_object$zhang_bmmc_reference_celltype_l2 <- 'Unmapped'
+      seurat_object$score_bmmc_zhang_reference_celltype_l2 <- 0
+      seurat_object$zhang_bmmc_reference_celltype_l3 <- 'Unmapped'
+      seurat_object$score_bmmc_zhang_reference_celltype_l3 <- 0
+      seurat_object$zhang_bmmc_reference_celltype_l4 <- 'Unmapped'
+      seurat_object$score_bmmc_zhang_reference_celltype_l4 <- 0
+    })
   } else {
-    print('Library has too few cells to annotate confidently (i.e. < 100)')
-  }  return(seurat_object)
+    print('Library has too few cells to annotate confidently...')
+    seurat_object$zhang_bmmc_reference_celltype_l1 <- 'Unmapped'
+    seurat_object$score_bmmc_zhang_reference_celltype_l1 <- 0
+    seurat_object$zhang_bmmc_reference_celltype_l2 <- 'Unmapped'
+    seurat_object$score_bmmc_zhang_reference_celltype_l2 <- 0
+    seurat_object$zhang_bmmc_reference_celltype_l3 <- 'Unmapped'
+    seurat_object$score_bmmc_zhang_reference_celltype_l3 <- 0
+    seurat_object$zhang_bmmc_reference_celltype_l4 <- 'Unmapped'
+    seurat_object$score_bmmc_zhang_reference_celltype_l4 <- 0
+  }
+  return(seurat_object)
 }
 
 library(Seurat)
 
 merge_seurat_GEX_objects <- function(seurat_object_list, chunk_size = 5, assays = NULL) {
+  # Check if assays parameter is provided and is a non-empty vector
   if (is.null(assays) || length(assays) == 0) {
     stop("Assays parameter must be provided as a non-empty vector.")
   }
+  
   merged_data_list <- list()
   
   while (length(seurat_object_list) >= chunk_size) {
@@ -203,8 +290,10 @@ merge_seurat_GEX_objects <- function(seurat_object_list, chunk_size = 5, assays 
     
     seurat_object_list <- seurat_object_list[-(1:chunk_size)]
     
+    # Print progress info
     cat(paste("Merged", chunk_size, "objects. Remaining:", length(seurat_object_list), "\n"))
     
+    # Clean up memory
     gc()
   }
   
@@ -217,8 +306,10 @@ merge_seurat_GEX_objects <- function(seurat_object_list, chunk_size = 5, assays 
     
     merged_data_list <- append(merged_data_list, list(remaining_merged))
     
+    # Print final progress info
     cat(paste("Merged", length(seurat_object_list), "objects. All objects processed.\n"))
     
+    # Clean up memory
     gc()
   }
   
@@ -231,8 +322,10 @@ merge_seurat_GEX_objects <- function(seurat_object_list, chunk_size = 5, assays 
         final_merged_data <- JoinLayers(final_merged_data, assay = assay)
       }
       
+      # Print progress info
       cat(paste("Merged additional chunk. Remaining chunks:", length(merged_data_list) - i, "\n"))
       
+      # Clean up memory
       gc()
     }
   }
@@ -241,6 +334,7 @@ merge_seurat_GEX_objects <- function(seurat_object_list, chunk_size = 5, assays 
     final_merged_data <- JoinLayers(final_merged_data, assay = assay, layer = c('counts', 'data', 'scale.data'))
   }
   
+  # Clean up memory
   gc()
   
   return(final_merged_data)
@@ -393,43 +487,9 @@ calculate_percentage_above_zero <- function(seurat_object, gene_of_interest, met
   return(percent_above_0)
 }
 
+
 plot_a_list <- function(master_list_with_plots, no_of_rows, no_of_cols) {
   
   patchwork::wrap_plots(master_list_with_plots, 
                         nrow = no_of_rows, ncol = no_of_cols)
-}
-
-recreate_seurat_object <- function(seurat_objects, assays_to_recreate, default_metadata_column) {
-  for (assay in assays_to_recreate) {
-    seurat_objects <- JoinLayers(seurat_objects, assay = assay, layer = c('counts', 'data', 'scale.data'))
-  }
-  
-  metadata <- seurat_objects@meta.data
-  
-  layer_data_list <- list()
-  for (assay in assays_to_recreate) {
-    counts <- LayerData(seurat_objects, assay = assay, layer = 'counts')
-    data <- LayerData(seurat_objects, assay = assay, layer = 'data')
-    layer_data_list[[assay]] <- list(counts = counts, data = data)
-  }
-  
-  rna_counts <- layer_data_list[['RNA']]$counts
-  rna_data <- layer_data_list[['RNA']]$data
-  seurat_objects <- CreateSeuratObject(counts = rna_counts, data = rna_data, meta.data = metadata)
-  
-  for (assay in assays_to_recreate) {
-    if (assay != 'RNA') {
-      counts <- layer_data_list[[assay]]$counts
-      data <- layer_data_list[[assay]]$data
-      seurat_objects[[assay]] <- CreateAssay5Object(counts = counts, data = data)
-    }
-  }
-  
-  seurat_objects <- SetIdent(seurat_objects, value = default_metadata_column)
-  DefaultAssay(seurat_objects) <- 'RNA'
-  
-  rm(layer_data_list)
-  gc()
-  
-  return(seurat_objects)
 }
